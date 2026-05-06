@@ -61,16 +61,9 @@ Website/
 - **JetBrains Mono**（Google Fonts）— 編號、按鈕、技術標籤
 - **Noto Sans TC**（Google Fonts）— 中文 fallback
 
-### 動畫禁忌
-- ❌ 任何彩色（除了狀態指示燈那一抹綠）
-- ❌ 陰影（用邊框與留白製造分層）
-- ❌ 元素旋轉、彈跳、過衝
-- ❌ 閃爍背景漸層
-- ❌ 動畫超過 700ms（捲動驅動的除外）
-
 ---
 
-## 本機預覽
+## 本機預覽 (我不確定這在說啥）
 
 雙擊 `index.html` 就會在預設瀏覽器打開，但有些瀏覽器對於 `file://` 的 CORS
 限制會阻擋字型載入。**建議用本地 server**：
@@ -101,20 +94,6 @@ npx serve .
 2. Settings → Pages → Source 選 `main` 分支
 3. 等 1 分鐘後網站就會在 `https://你的帳號.github.io/repo名稱/` 上線
 4. 之後改完 code `git push` 就會自動更新，**不需要手動再做任何事**
-
----
-
-## 給未來自己的提醒
-
-- 改顏色之前，先看一次 `WEBSITE_GUIDELINES.md` v0.3 ——
-  我們是 **純黑白編輯級** 不是「黑白為主、可以加點藍色」。
-  如果想加色，先想能不能用字級、位置、留白解決。
-- Fraunces 的 `WONK` 軸目前設為 0（關掉），維持 `f / g / y` 常規樣貌。
-  想恢復原始「奇趣」字形，把 `font-variation-settings` 內 `"WONK" 0` 拿掉。
-- 滑鼠跟隨點的 `mix-blend-mode: difference` 是讓黑點在黑底自動變白的關鍵 ——
-  別把它換成固定顏色，會在反相區段瞎掉。
-- 所有揭露動畫都靠 IntersectionObserver 觸發 **一次**。重複進出視窗不會
-  重播，這是刻意設計。
 
 ---
 
