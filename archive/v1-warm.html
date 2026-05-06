@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NTHU-FLY · 仿生嗅覺邊緣運算系統 | iGEM</title>
+<meta name="description" content="NTHU-FLY · 結合果蠅神經運算模型與活體細胞感測陣列之仿生嗅覺邊緣運算系統。" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ================================
+   NTHU-FLY · CLEAN BIOTECH PALETTE
+   60% — Warm off-white (#F6F5F0) + soft Dust-Grey-tinted sections
+   30% — Black (#070707) headings + Ebony (#626C66) body
+   10% — Emerald accent; Spring/Light Green sparingly
+   Pure white reserved for text on dark surfaces (high contrast)
+================================ */
+:root {
+  --white: #FFFFFF;
+  --black: #070707;
+  --ebony: #626C66;
+  --dust:  #DEDBD8;
+  --emerald: #14CC61;
+  --spring:  #27FB6B;
+  --light-green: #73FC9E;
+
+  /* Soft neutrals — toned down from pure white to ease on the eyes */
+  --bg:         #F6F5F0;   /* main page — warm off-white */
+  --bg-soft:    #F2F1EB;   /* slightly deeper variant */
+  --bg-section: #EAE9E2;   /* alternating section, leaning toward Dust Grey */
+  --bg-card:    #FBFAF6;   /* cards — slightly lifted from page bg */
+  --border:    #DEDCD4;
+  --border-strong: #C9C7BF;
+
+  --text:        var(--black);
+  --text-body:   #2A2D2B;
+  --text-muted:  var(--ebony);
+
+  --accent: var(--emerald);
+  --accent-bright: var(--spring);
+  --accent-soft: rgba(20, 204, 97, 0.08);
+
+  --max: 1200px;
+  --radius: 14px;
+  --radius-lg: 22px;
+  --shadow-sm: 0 1px 2px rgba(7,7,7,0.04), 0 1px 3px rgba(7,7,7,0.04);
+  --shadow:    0 4px 12px rgba(7,7,7,0.04), 0 1px 3px rgba(7,7,7,0.04);
+  --shadow-lg: 0 20px 40px -12px rgba(7,7,7,0.08), 0 8px 16px -8px rgba(7,7,7,0.04);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Dark hero — used ONLY for the hero section, echoes the smoky logo backdrop.
+     The page body stays warm off-white per the guidelines. */
+  --hero-ink:        #0B0B0D;   /* deepest smoke, near-black but not pure */
+  --hero-smoke:      #1C1D20;   /* mid smoke for radial drift */
+  --hero-haze:       #2A2B2F;   /* lifted edge of smoke clouds */
+  --hero-text:       #F2EFEA;   /* slightly warm off-white for body text on dark */
+  --hero-text-muted: #9A9C9A;   /* muted grey on dark */
+  --hero-border:     rgba(242, 239, 234, 0.14);
+  --hero-card-bg:    rgba(242, 239, 234, 0.04);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: 'Inter', 'Noto Sans TC', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text-body);
+  line-height: 1.65;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  position: relative;
+}
+/* Subtle paper grain on the body surfaces — quiet echo of the logo's textured backdrop.
+   Sits behind everything and is masked away from the hero. */
+body::before {
+  content: ""; position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/></svg>");
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: multiply;
+}
+
+/* HIERARCHY — H1 huge, H2 medium, P readable */
+h1, h2, h3, h4 {
+  font-family: 'Inter', 'Noto Sans TC', sans-serif;
+  color: var(--black);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  font-weight: 800;
+}
+h1 { font-size: clamp(2.5rem, 6vw, 4.75rem); font-weight: 900; }
+h2 { font-size: clamp(1.8rem, 3.5vw, 2.75rem); }
+h3 { font-size: clamp(1.1rem, 1.5vw, 1.3rem); font-weight: 700; }
+h4 {
+  font-size: 0.78rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--accent);
+  font-family: 'JetBrains Mono', monospace;
+}
+p { color: var(--text-body); font-size: 1rem; max-width: 65ch; }
+a { color: inherit; text-decoration: none; transition: color 0.25s var(--ease); }
+
+.container { max-width: var(--max); margin: 0 auto; padding: 0 24px; }
+
+/* ================================ NAV ================================
+   Two states:
+   - Default (over the dark hero): transparent, light text, no border.
+   - .scrolled (over the light body): warm off-white translucent, dark text, soft border.
+================================ */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: transparent;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  border-bottom: 1px solid transparent;
+  color: var(--hero-text);
+  transition: background 0.35s var(--ease), border-color 0.35s var(--ease), color 0.35s var(--ease), backdrop-filter 0.35s var(--ease);
+}
+.nav.scrolled {
+  background: rgba(246, 245, 240, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom-color: var(--border);
+  color: var(--black);
+}
+.nav-inner {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo {
+  display: flex; align-items: center; gap: 12px;
+  font-weight: 800; font-size: 1.05rem; letter-spacing: -0.02em;
+  color: inherit;
+}
+/* Logo mark — small line-art fly silhouette as inline SVG.
+   Echoes the team's hand-drawn fly logo without trying to recreate it pixel-for-pixel.
+   Replace with the official PNG/SVG logo when available. */
+.logo-mark {
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  color: inherit;
+}
+.logo-mark svg {
+  width: 100%; height: 100%;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.logo-divider { opacity: 0.55; font-weight: 300; margin: 0 2px; }
+.logo-sub { color: var(--hero-text-muted); font-weight: 500; font-size: 0.9rem; }
+.nav.scrolled .logo-sub { color: var(--text-muted); }
+
+.nav-links {
+  display: flex; gap: 32px; align-items: center;
+  list-style: none;
+}
+.nav-links a {
+  font-size: 0.9rem;
+  color: var(--hero-text-muted);
+  font-weight: 500;
+  transition: color 0.25s var(--ease);
+}
+.nav-links a:hover { color: var(--hero-text); }
+.nav.scrolled .nav-links a { color: var(--text-muted); }
+.nav.scrolled .nav-links a:hover { color: var(--black); }
+
+.nav-cta {
+  background: var(--hero-text);
+  color: var(--hero-ink) !important;
+  padding: 9px 18px;
+  border-radius: 999px;
+  font-weight: 600 !important;
+  transition: background 0.25s var(--ease), color 0.25s var(--ease);
+}
+.nav-cta:hover { background: var(--emerald); color: var(--white) !important; }
+.nav.scrolled .nav-cta { background: var(--black); color: var(--white) !important; }
+.nav.scrolled .nav-cta:hover { background: var(--emerald); }
+
+.menu-toggle {
+  display: none; background: none; border: none;
+  color: inherit; font-size: 1.5rem; cursor: pointer;
+}
+
+/* ================================ HERO (DARK / SMOKY) ================================
+   Echoes the logo's smoky black backdrop. Composed of:
+   1) Base ink color
+   2) Three soft radial "smoke clouds" of slightly varying tone
+   3) An SVG noise/grain overlay for paper-ink texture (subtle)
+   4) A faint mono grid masked at the edges (kept very low opacity)
+   5) A bottom gradient that fades into the warm off-white body
+================================ */
+.hero {
+  min-height: 96vh;
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 160px 0 140px;
+  overflow: hidden;
+  color: var(--hero-text);
+  background:
+    radial-gradient(900px 560px at 78% 22%, var(--hero-haze), transparent 62%),
+    radial-gradient(700px 460px at 18% 78%, rgba(98, 108, 102, 0.22), transparent 65%),
+    radial-gradient(560px 360px at 50% 50%, var(--hero-smoke), transparent 70%),
+    var(--hero-ink);
+}
+/* Faint mono grid — barely there, masked from the edges. */
+.hero::before {
+  content: ""; position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(242, 239, 234, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(242, 239, 234, 0.04) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse 70% 60% at center, black 0%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at center, black 0%, transparent 75%);
+  pointer-events: none;
+}
+/* Grain overlay — SVG turbulence, very low opacity. Adds the "smoky paper" texture. */
+.hero::after {
+  content: ""; position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/></svg>");
+  opacity: 0.10;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+/* Smooth fade from dark hero into warm off-white body. */
+.hero-fade {
+  position: absolute; left: 0; right: 0; bottom: -1px;
+  height: 140px;
+  background: linear-gradient(to bottom, transparent 0%, rgba(11, 11, 13, 0.5) 35%, var(--bg) 100%);
+  pointer-events: none;
+  z-index: 3;
+}
+.hero-content { position: relative; z-index: 2; }
+
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 7px 16px;
+  border: 1px solid var(--hero-border);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: var(--hero-text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--hero-card-bg);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  margin-bottom: 32px;
+}
+.eyebrow .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--emerald);
+  box-shadow: 0 0 0 3px rgba(20, 204, 97, 0.22);
+  animation: pulse 2s infinite;
+}
+.eyebrow strong { color: var(--hero-text); font-weight: 600; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.6; }
+}
+.hero h1 {
+  margin-bottom: 28px;
+  max-width: 18ch;
+  color: var(--hero-text);
+}
+.hero h1 .accent {
+  background: linear-gradient(135deg, var(--emerald) 0%, var(--spring) 60%, var(--light-green) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero p.lead {
+  font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+  color: var(--hero-text-muted);
+  max-width: 60ch;
+  margin-bottom: 44px;
+  line-height: 1.7;
+}
+.hero-actions {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  margin-bottom: 80px;
+}
+/* On the dark hero, primary becomes the warm off-white (high contrast on dark, no ghost button). */
+.hero .btn-primary {
+  background: var(--hero-text);
+  color: var(--hero-ink);
+}
+.hero .btn-primary:hover {
+  background: var(--emerald);
+  color: var(--white);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px -10px rgba(20, 204, 97, 0.45);
+}
+.hero .btn-secondary {
+  background: transparent;
+  color: var(--hero-text);
+  border-color: var(--hero-border);
+}
+.hero .btn-secondary:hover {
+  border-color: var(--hero-text);
+  background: var(--hero-card-bg);
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 13px 24px;
+  border-radius: 999px;
+  font-weight: 600; font-size: 0.95rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.25s var(--ease);
+}
+/* Primary — high-contrast solid (no ghost button) */
+.btn-primary {
+  background: var(--black);
+  color: var(--white);
+}
+.btn-primary:hover {
+  background: var(--emerald);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px -8px rgba(20, 204, 97, 0.4);
+}
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--black);
+  border-color: var(--border-strong);
+}
+.btn-secondary:hover {
+  border-color: var(--black);
+  background: var(--bg-card);
+}
+.btn .arrow { transition: transform 0.25s var(--ease); }
+.btn:hover .arrow { transform: translateX(3px); }
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+  padding-top: 32px;
+  border-top: 1px solid var(--hero-border);
+  max-width: 720px;
+}
+.stat .num {
+  font-size: clamp(1.6rem, 2.5vw, 2.1rem);
+  font-weight: 800;
+  color: var(--hero-text);
+  letter-spacing: -0.03em;
+  font-family: 'Inter', sans-serif;
+}
+.stat .num .unit { color: var(--emerald); }
+.stat .label {
+  font-size: 0.76rem;
+  color: var(--hero-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* ================================ SECTIONS ================================ */
+section { padding: 120px 0; position: relative; z-index: 2; }
+.section-head { margin-bottom: 64px; max-width: 760px; }
+.section-head h4 { margin-bottom: 16px; }
+.section-head h2 { margin-bottom: 20px; }
+.section-head p { color: var(--text-muted); font-size: 1.08rem; line-height: 1.7; }
+
+/* Subtle hand-drawn-feeling divider — used sparingly between major sections.
+   An irregular SVG path, ebony-tinted, low opacity. Quiet echo of the logo's line work. */
+.ink-divider {
+  display: block;
+  width: 80px;
+  height: 12px;
+  margin: 0 0 28px 0;
+  color: var(--ebony);
+  opacity: 0.35;
+}
+.ink-divider svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
+.section-head .ink-divider { margin-bottom: 22px; }
+
+/* ================================ ABSTRACT ================================ */
+.abstract {
+  background: var(--bg-section);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.abstract-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 80px;
+  align-items: start;
+}
+.abstract-grid p {
+  font-size: 1.08rem;
+  line-height: 1.8;
+  color: var(--text-body);
+  max-width: none;
+}
+.abstract-grid p + p { margin-top: 22px; }
+
+/* ================================ PILLARS ================================ */
+.pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.pillar {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px 32px;
+  transition: all 0.3s var(--ease);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.pillar:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+.pillar::after {
+  content: ""; position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--emerald), var(--spring), var(--light-green));
+  opacity: 0; transition: opacity 0.3s;
+}
+.pillar:hover::after { opacity: 1; }
+.pillar-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.76rem;
+  color: var(--accent);
+  margin-bottom: 16px;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+.pillar h3 { margin-bottom: 14px; color: var(--black); }
+.pillar p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.7; }
+.pillar-tags {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px;
+}
+.tag {
+  font-size: 0.74rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--bg-soft);
+}
+
+/* ================================ HARDWARE ================================ */
+.hardware {
+  background: var(--bg-section);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.hw-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+.hw-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  background: var(--bg-card);
+  display: flex; flex-direction: column;
+  transition: all 0.25s var(--ease);
+}
+.hw-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow);
+}
+.hw-card .icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  border: 1px solid rgba(20, 204, 97, 0.2);
+  display: grid; place-items: center;
+  color: var(--emerald);
+  margin-bottom: 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 1rem;
+}
+.hw-card h3 { font-size: 1.05rem; margin-bottom: 8px; }
+.hw-card p { font-size: 0.92rem; color: var(--text-muted); }
+
+/* ================================ TIMELINE ================================ */
+.timeline {
+  position: relative;
+  padding-left: 32px;
+  border-left: 1px solid var(--border-strong);
+  max-width: 800px;
+}
+.tl-item {
+  position: relative;
+  padding-bottom: 40px;
+}
+.tl-item:last-child { padding-bottom: 0; }
+.tl-item::before {
+  content: ""; position: absolute;
+  left: -38px; top: 6px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2px solid var(--emerald);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+.tl-item.checkpoint::before { background: var(--emerald); }
+.tl-item .month {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.76rem;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+  display: inline-block;
+  font-weight: 600;
+}
+.tl-item .checkpoint-tag {
+  display: inline-block;
+  background: var(--emerald);
+  color: var(--white);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+  letter-spacing: 0.05em;
+}
+.tl-item h3 { font-size: 1.1rem; margin-bottom: 6px; }
+.tl-item p { font-size: 0.95rem; color: var(--text-muted); }
+
+/* ================================ INNOVATION ================================ */
+.value-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.value {
+  padding: 36px 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  transition: all 0.25s var(--ease);
+}
+.value:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow);
+}
+.value .big {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 18px;
+  letter-spacing: 0.05em;
+}
+.value h3 { margin-bottom: 12px; font-size: 1.1rem; }
+.value p { color: var(--text-muted); font-size: 0.93rem; line-height: 1.7; }
+
+/* ================================ CTA ================================ */
+.cta {
+  text-align: center;
+  padding: 110px 24px;
+  background:
+    radial-gradient(700px 400px at 50% 30%, var(--accent-soft), transparent 70%),
+    var(--bg-section);
+  border-top: 1px solid var(--border);
+}
+.cta h2 { margin-bottom: 20px; max-width: 18ch; margin-left: auto; margin-right: auto; }
+.cta p { color: var(--text-muted); margin: 0 auto 36px; max-width: 50ch; }
+.cta .btn { margin: 6px; }
+
+/* ================================ FOOTER ================================ */
+footer {
+  background: var(--bg-soft);
+  border-top: 1px solid var(--border);
+  padding: 60px 0 32px;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 48px;
+}
+.footer-grid h4 {
+  color: var(--black);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  margin-bottom: 18px;
+  font-family: 'Inter', sans-serif;
+}
+.footer-grid ul { list-style: none; }
+.footer-grid li { margin-bottom: 10px; }
+.footer-grid a { color: var(--text-muted); font-size: 0.92rem; }
+.footer-grid a:hover { color: var(--black); }
+.footer-grid p { font-size: 0.92rem; color: var(--text-muted); max-width: 36ch; }
+.footer-bottom {
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+  font-size: 0.84rem;
+  color: var(--text-muted);
+}
+.footer-bottom .draft {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg-section);
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: 0.78rem;
+}
+
+/* ================================ RESPONSIVE ================================ */
+@media (max-width: 900px) {
+  .nav-links {
+    display: none; position: fixed; top: 65px; left: 0; right: 0;
+    background: rgba(11, 11, 13, 0.96); border-bottom: 1px solid var(--hero-border);
+    flex-direction: column; padding: 24px; gap: 18px; align-items: flex-start;
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  }
+  .nav.scrolled .nav-links {
+    background: rgba(246, 245, 240, 0.96);
+    border-bottom-color: var(--border);
+  }
+  .nav-links.open { display: flex; }
+  .menu-toggle { display: block; }
+  .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  .abstract-grid { grid-template-columns: 1fr; gap: 32px; }
+  .pillars-grid, .hw-grid, .value-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  section { padding: 80px 0; }
+}
+@media (max-width: 540px) {
+  .hero-actions { flex-direction: column; align-items: stretch; }
+  .btn { justify-content: center; }
+  .footer-grid { grid-template-columns: 1fr; }
+}
+
+/* ================================ MOTION ================================
+   Per guidelines §8: fade + translate-up on scroll, ease-out, trigger once.
+   transform/opacity only, no layout-triggering properties.
+================================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 520ms var(--ease), transform 520ms var(--ease);
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+/* Stagger children of a revealed grid (max ~6 items per §8.2). */
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 480ms var(--ease), transform 480ms var(--ease);
+}
+.reveal-stagger.is-visible > * { opacity: 1; transform: none; }
+.reveal-stagger.is-visible > *:nth-child(1) { transition-delay: 0ms; }
+.reveal-stagger.is-visible > *:nth-child(2) { transition-delay: 70ms; }
+.reveal-stagger.is-visible > *:nth-child(3) { transition-delay: 140ms; }
+.reveal-stagger.is-visible > *:nth-child(4) { transition-delay: 210ms; }
+.reveal-stagger.is-visible > *:nth-child(5) { transition-delay: 280ms; }
+.reveal-stagger.is-visible > *:nth-child(6) { transition-delay: 350ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal, .reveal-stagger > * { opacity: 1 !important; transform: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#" class="logo">
+      <span class="logo-mark" aria-hidden="true">
+        <!-- Line-art fly mark — echoes the hand-drawn team logo. Replace with the official logo asset when ready. -->
+        <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <!-- body -->
+          <ellipse cx="16" cy="18" rx="6" ry="8.5"/>
+          <!-- thorax line -->
+          <path d="M11 14 q5 -2 10 0"/>
+          <!-- left wing -->
+          <path d="M11 14 q-7 -3 -8 -10 q4 1 9 7"/>
+          <!-- right wing -->
+          <path d="M21 14 q7 -3 8 -10 q-4 1 -9 7"/>
+          <!-- left eye -->
+          <circle cx="13" cy="11" r="1.6"/>
+          <!-- right eye -->
+          <circle cx="19" cy="11" r="1.6"/>
+          <!-- antennae -->
+          <path d="M14 9 q-1 -3 -3 -4"/>
+          <path d="M18 9 q1 -3 3 -4"/>
+        </svg>
+      </span>
+      NTHU<span class="logo-divider">—</span>FLY
+      <span class="logo-sub" style="margin-left: 6px;">/ iGEM 2026</span>
+    </a>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="#abstract">Abstract</a></li>
+      <li><a href="#pillars">Modules</a></li>
+      <li><a href="#hardware">Hardware</a></li>
+      <li><a href="#timeline">Roadmap</a></li>
+      <li><a href="#value">Innovation</a></li>
+      <li><a href="#contact" class="nav-cta">Contact</a></li>
+    </ul>
+    <button class="menu-toggle" id="menu-toggle" aria-label="Open menu">≡</button>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<header class="hero">
+  <div class="container hero-content">
+    <span class="eyebrow">
+      <span class="dot"></span>
+      <strong>NTHU-FLY</strong> · Bio-Digital Olfactory System · iGEM 2026
+    </span>
+    <h1>
+      讓植物開口，<br>
+      說出 <span class="accent">疾病訊號</span>
+    </h1>
+    <p class="lead">
+      結合果蠅神經運算模型與活體細胞感測陣列，打造可在邊緣裝置即時運行的生機一體（Bio-digital）仿生電子鼻系統。捕捉 ppb 級揮發性有機化合物，為智慧農業與醫療檢測提供新一代早期預警平台。
+    </p>
+    <div class="hero-actions">
+      <a href="#abstract" class="btn btn-primary">
+        了解計畫 <span class="arrow">→</span>
+      </a>
+      <a href="#pillars" class="btn btn-secondary">
+        技術架構
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="num"><span class="unit">ppb</span></div>
+        <div class="label">偵測靈敏度</div>
+      </div>
+      <div class="stat">
+        <div class="num">3</div>
+        <div class="label">核心研究模組</div>
+      </div>
+      <div class="stat">
+        <div class="num">4<span class="unit">+</span></div>
+        <div class="label">穩定 OR 細胞株</div>
+      </div>
+      <div class="stat">
+        <div class="num">37<span class="unit">°C</span></div>
+        <div class="label">床邊檢測恆溫</div>
+      </div>
+    </div>
+  </div>
+  <!-- Smooth dark-to-light fade into the body. -->
+  <div class="hero-fade" aria-hidden="true"></div>
+</header>
+
+<!-- ===== ABSTRACT ===== -->
+<section id="abstract" class="abstract">
+  <div class="container">
+    <div class="abstract-grid">
+      <div>
+        <span class="ink-divider" aria-hidden="true">
+          <svg viewBox="0 0 80 12" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 6 q6 -3 12 0 t12 0 t12 0 t12 0 t12 0 t12 0"/>
+          </svg>
+        </span>
+        <h4>// Abstract</h4>
+        <h2>從生物演化淬鍊出的氣味解碼器</h2>
+      </div>
+      <div>
+        <p>
+          農業病害每年造成巨大經濟損失，而植物在染病初期釋放的揮發性有機化合物（VOCs），是極具價值的早期求救訊號。然而，現有感測技術難以在複雜環境中精準捕捉並辨識這些微量氣味特徵。
+        </p>
+        <p>
+          NTHU-FLY 突破傳統硬體限制，利用表現果蠅嗅覺受體的活體細胞陣列作為感測核心，發揮自然界千萬年演化出的極致靈敏度；在運算後端，導入仿生資料處理演算法，將高維度的螢光動態訊號轉化為精準的疾病辨識結果。低功耗、高專一性、可自我修復——並能無縫部署至邊緣運算裝置。
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PILLARS ===== -->
+<section id="pillars">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="ink-divider" aria-hidden="true">
+        <svg viewBox="0 0 80 12" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 6 q6 -3 12 0 t12 0 t12 0 t12 0 t12 0 t12 0"/>
+        </svg>
+      </span>
+      <h4>// Research Modules</h4>
+      <h2>三大核心研究模組</h2>
+      <p>由下而上（Bottom-up）雙軌並行策略，從感測元件、神經運算到跨物種升級平台，建構完整的仿生嗅覺技術堆疊。</p>
+    </div>
+    <div class="pillars-grid reveal-stagger">
+      <div class="pillar">
+        <div class="pillar-num">M·01 / Bio-Sensing</div>
+        <h3>昆蟲嗅覺受體之異源表現</h3>
+        <p>
+          以 HEK293T 為平台，雙質體共轉染策略快速建立氣味感測元件。GCaMP6 螢光動態驗證受體活化，並導入 AlphaFold 與分子對接進行 AI 輔助蛋白突變優化。
+        </p>
+        <div class="pillar-tags">
+          <span class="tag">HEK293T</span>
+          <span class="tag">GCaMP6</span>
+          <span class="tag">AlphaFold</span>
+        </div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">M·02 / Neural Compute</div>
+        <h3>仿生神經運算與深度學習</h3>
+        <p>
+          模擬果蠅觸角葉（AL）側向抑制與蕈狀體（MB）的局部敏感雜湊（LSH）稀疏編碼。將高維螢光矩陣轉為精準分類，活體雙光子鈣離子造影提供生物學基準。
+        </p>
+        <div class="pillar-tags">
+          <span class="tag">AL · LN</span>
+          <span class="tag">MB · LSH</span>
+          <span class="tag">Sparse Coding</span>
+        </div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">M·03 / Cross-species</div>
+        <h3>哺乳動物嗅覺仿生平台</h3>
+        <p>
+          PC12 神經細胞系表現狗、貓與人類特異性 OR、伴侶蛋白 RTP1S 與 G<sub>αolf</sub>。透過 cAMP 與鈣離子訊號比較跨物種靈敏度，作為次世代感測升級基礎。
+        </p>
+        <div class="pillar-tags">
+          <span class="tag">PC12</span>
+          <span class="tag">GPCR</span>
+          <span class="tag">RTP1S</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HARDWARE ===== -->
+<section id="hardware" class="hardware">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="ink-divider" aria-hidden="true">
+        <svg viewBox="0 0 80 12" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 6 q6 -3 12 0 t12 0 t12 0 t12 0 t12 0 t12 0"/>
+        </svg>
+      </span>
+      <h4>// Hardware Architecture</h4>
+      <h2>邊緣運算床邊檢測系統</h2>
+      <p>「主從控制機台」與「拋棄式氣液介面活體膠囊」之分離式架構，整合氣體微流控、微環境恆溫、光學擷取與深度學習推論模組。</p>
+    </div>
+    <div class="hw-grid reveal-stagger">
+      <div class="hw-card">
+        <div class="icon">A</div>
+        <h3>Disposable ALI Bio-Cartridge</h3>
+        <p>聚碳酸酯奈米微孔濾膜載體，PDL 生物錨定 + 低熔點洋菜膠相變固水技術，徹底消除運送途中之液面搖晃。</p>
+      </div>
+      <div class="hw-card">
+        <div class="icon">B</div>
+        <h3>Direct Gas Perfusion</h3>
+        <p>微型氣泵以低流速導入呼出氣袋檢體，串聯氣道確保陣列濃度一致；0.22 µm 醫療級濾嘴維持生物安全。</p>
+      </div>
+      <div class="hw-card">
+        <div class="icon">C</div>
+        <h3>Incubation & Light Shield</h3>
+        <p>Peltier 致冷／加熱晶片搭配 PID 控制，37 °C 精準恆溫；卡扣 + O-ring 達成絕對物理避光。</p>
+      </div>
+      <div class="hw-card">
+        <div class="icon">D</div>
+        <h3>Optical Readout & Edge AI</h3>
+        <p>488 nm LED + 帶通濾光片擷取 ΔF/F₀；雙腦架構（Arduino 控制 + Raspberry Pi 推論）本地端執行類觸角葉神經網路模型。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TIMELINE ===== -->
+<section id="timeline">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="ink-divider" aria-hidden="true">
+        <svg viewBox="0 0 80 12" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 6 q6 -3 12 0 t12 0 t12 0 t12 0 t12 0 t12 0"/>
+        </svg>
+      </span>
+      <h4>// Project Roadmap</h4>
+      <h2>五個月高強度概念驗證</h2>
+      <p>兼顧研究嚴謹性與開發效率，將長程規劃壓縮為 POC 衝刺。</p>
+    </div>
+    <div class="timeline reveal-stagger">
+      <div class="tl-item">
+        <span class="month">MONTH 1 — APR</span>
+        <h3>質體建構與光學環境</h3>
+        <p>完成 HEK293T 雙質體序列建構與擴增，備妥基礎光學觀測環境。</p>
+      </div>
+      <div class="tl-item checkpoint">
+        <span class="month">MONTH 2 — MAY</span>
+        <span class="checkpoint-tag">CHECKPOINT 1</span>
+        <h3>細胞株 POC</h3>
+        <p>觀測 VUAA1 激發之螢光動態反應；同步完成哺乳動物 OR 系統質體設計。</p>
+      </div>
+      <div class="tl-item checkpoint">
+        <span class="month">MONTHS 3–4 — JUN/AUG</span>
+        <span class="checkpoint-tag">CHECKPOINT 2</span>
+        <h3>螢光資料矩陣與受體優化</h3>
+        <p>產出果蠅 OR 陣列基礎螢光數據矩陣交予 DL 團隊；完成計算生物學受體突變優化；啟動 PC12 轉染與功能驗證。</p>
+      </div>
+      <div class="tl-item checkpoint">
+        <span class="month">MONTH 5 — SEP</span>
+        <span class="checkpoint-tag">CHECKPOINT 3</span>
+        <h3>整合 MVP 系統</h3>
+        <p>完成高通量氣味刺激測試與 DL 演算法分類準確率驗證，產出初代生物感測 MVP。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== INNOVATION & VALUE ===== -->
+<section id="value">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="ink-divider" aria-hidden="true">
+        <svg viewBox="0 0 80 12" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 6 q6 -3 12 0 t12 0 t12 0 t12 0 t12 0 t12 0"/>
+        </svg>
+      </span>
+      <h4>// Innovation & Value</h4>
+      <h2>為什麼這項計畫重要</h2>
+    </div>
+    <div class="value-grid reveal-stagger">
+      <div class="value">
+        <span class="big">01 / Academic</span>
+        <h3>學術創新</h3>
+        <p>首創將活體哺乳動物細胞之異源表現陣列直接對接果蠅大腦演算法，為神經形態運算提供真實生物訊號來源。</p>
+      </div>
+      <div class="value">
+        <span class="big">02 / Material</span>
+        <h3>解決材料老化痛點</h3>
+        <p>細胞自我更新能力，從根本解決傳統金屬氧化物感測器的材料疲勞與基線漂移問題，大幅延長感測器壽命與穩定性。</p>
+      </div>
+      <div class="value">
+        <span class="big">03 / Edge AI</span>
+        <h3>邊緣運算潛力</h3>
+        <p>LSH 演算法忠實還原昆蟲大腦極高能效比，輕量化架構適合部署於低功耗邊緣晶片，廣泛應用於溫室監測與工業氣體洩漏追蹤。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section id="contact" class="cta">
+  <div class="container">
+    <span class="ink-divider" style="margin-left:auto; margin-right:auto;" aria-hidden="true">
+      <svg viewBox="0 0 80 12" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 6 q6 -3 12 0 t12 0 t12 0 t12 0 t12 0 t12 0"/>
+      </svg>
+    </span>
+    <h4>// Join Us</h4>
+    <h2>讓我們一起重新定義氣味感測</h2>
+    <p>對合成生物學、神經仿生運算或邊緣運算有興趣？歡迎與 NTHU-FLY 團隊討論合作機會。</p>
+    <a href="mailto:team@nthu-fly.example" class="btn btn-primary">聯絡團隊 <span class="arrow">→</span></a>
+    <a href="#" class="btn btn-secondary">下載計畫書</a>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a href="#" class="logo" style="margin-bottom: 18px;">
+          <span class="logo-mark" aria-hidden="true">
+        <!-- Line-art fly mark — echoes the hand-drawn team logo. Replace with the official logo asset when ready. -->
+        <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <!-- body -->
+          <ellipse cx="16" cy="18" rx="6" ry="8.5"/>
+          <!-- thorax line -->
+          <path d="M11 14 q5 -2 10 0"/>
+          <!-- left wing -->
+          <path d="M11 14 q-7 -3 -8 -10 q4 1 9 7"/>
+          <!-- right wing -->
+          <path d="M21 14 q7 -3 8 -10 q-4 1 -9 7"/>
+          <!-- left eye -->
+          <circle cx="13" cy="11" r="1.6"/>
+          <!-- right eye -->
+          <circle cx="19" cy="11" r="1.6"/>
+          <!-- antennae -->
+          <path d="M14 9 q-1 -3 -3 -4"/>
+          <path d="M18 9 q1 -3 3 -4"/>
+        </svg>
+      </span>
+          NTHU<span class="logo-divider">—</span>FLY
+        </a>
+        <p style="margin-top: 12px;">結合果蠅神經運算模型與活體細胞感測陣列之仿生嗅覺邊緣運算系統開發。國立清華大學 iGEM 2026 參賽團隊。</p>
+      </div>
+      <div>
+        <h4>Project</h4>
+        <ul>
+          <li><a href="#abstract">Abstract</a></li>
+          <li><a href="#pillars">Modules</a></li>
+          <li><a href="#hardware">Hardware</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Research</h4>
+        <ul>
+          <li><a href="#timeline">Roadmap</a></li>
+          <li><a href="#value">Innovation</a></li>
+          <li><a href="#">References</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Connect</h4>
+        <ul>
+          <li><a href="mailto:team@nthu-fly.example">Email</a></li>
+          <li><a href="#">GitHub</a></li>
+          <li><a href="#">iGEM Wiki</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 NTHU-FLY · iGEM Project · National Tsing Hua University</span>
+      <span class="draft">v0.2 · placeholder draft</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Navbar state — flips from dark-hero-overlay to light-translucent past the hero.
+  const nav = document.getElementById('nav');
+  // Use the hero's height so the flip happens right as the warm body starts to appear.
+  const hero = document.querySelector('.hero');
+  const flipAt = () => Math.max(40, (hero ? hero.offsetHeight - 120 : 320));
+  let threshold = flipAt();
+  window.addEventListener('resize', () => { threshold = flipAt(); }, { passive: true });
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > threshold);
+  }, { passive: true });
+
+  // Mobile menu
+  const toggle = document.getElementById('menu-toggle');
+  const links  = document.getElementById('nav-links');
+  toggle.addEventListener('click', () => links.classList.toggle('open'));
+  links.querySelectorAll('a').forEach(a => a.addEventListener('click', () => links.classList.remove('open')));
+
+  // Scroll reveals — IntersectionObserver, trigger once. Guidelines §8.5.
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduceMotion && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('is-visible');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -10% 0px' });
+    document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => io.observe(el));
+  } else {
+    // No-JS / reduced-motion fallback: show everything immediately.
+    document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => el.classList.add('is-visible'));
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<!-- ================================================================
+     NTHU-FLY · iGEM 2026 · Bio-Digital Olfactory System
+     ================================================================
+     檔案說明 / File overview
+     ----------------------------------------------------------------
+     本檔案：純 HTML 結構，不含樣式與行為邏輯。
+     This file: pure HTML structure. No CSS, no JS inline.
+
+     • 樣式設定請見：assets/styles.css
+     • 互動行為請見：assets/script.js
+     • 設計規範請見：WEBSITE_GUIDELINES.md（v0.3 編輯方向）
+     • 舊版（暖色生技風）已封存於：archive/v1-warm.html
+
+     維護原則：
+     1. 修改文字內容直接在這裡改，不要動到 assets/ 內檔案
+     2. 修改顏色、字級、間距 → 改 assets/styles.css 開頭的 :root tokens
+     3. 修改捲動行為、滑鼠軌跡、揭露動畫 → 改 assets/script.js
+     4. 新增區塊請複製現有 <section> 並沿用既定 class 命名
+================================================================ -->
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NTHU-FLY · Bio-Digital Olfactory System / iGEM 2026</title>
+<meta name="description" content="NTHU-FLY · 結合果蠅神經運算模型與活體細胞感測陣列之仿生嗅覺邊緣運算系統。" />
+
+<!-- 字型載入 / Fonts (Google Fonts)
+     Fraunces：H1 與大型 H2 編輯級襯線（含 opsz/SOFT/WONK 變動軸）
+     Inter：內文與 UI 主力
+     Noto Sans TC：中文 fallback
+     JetBrains Mono：技術標籤、編號、按鈕
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..600,0..100&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- 樣式表 / Stylesheet -->
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+
+<body>
+
+<!-- ================================================================
+     SCROLL PROGRESS / 捲動進度條
+     畫面最頂部的 1px 進度線，捲動時由左往右填滿。
+     在淺色區段為黑色，進入深色區段自動轉白（由 script.js 控制）
+================================================================ -->
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<!-- ================================================================
+     MOUSE CURSOR / 滑鼠跟隨點
+     單一黑點，使用 mix-blend-mode: difference 自動反相
+     觸控裝置與 prefers-reduced-motion 自動隱藏
+================================================================ -->
+<div class="cursor" id="cursor" aria-hidden="true"></div>
+
+<!-- ================================================================
+     NAV / 頂部導覽列
+     固定於頂部，使用 mix-blend-mode: difference 讓文字在黑白區段都可讀
+     左側：品牌標誌（小型線稿果蠅 SVG + NTHU—FLY 字樣）
+     右側：章節錨點 + 行動裝置選單按鈕
+================================================================ -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#" class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <!-- 線稿果蠅標誌（暫用版本，正式 logo 完成後直接替換此 svg）-->
+        <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="16" cy="18" rx="6" ry="8.5"/>
+          <path d="M11 14 q5 -2 10 0"/>
+          <path d="M11 14 q-7 -3 -8 -10 q4 1 9 7"/>
+          <path d="M21 14 q7 -3 8 -10 q-4 1 -9 7"/>
+          <circle cx="13" cy="11" r="1.6"/>
+          <circle cx="19" cy="11" r="1.6"/>
+          <path d="M14 9 q-1 -3 -3 -4"/>
+          <path d="M18 9 q1 -3 3 -4"/>
+        </svg>
+      </span>
+      NTHU—FLY
+    </a>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="#abstract">Abstract</a></li>
+      <li><a href="#modules">Modules</a></li>
+      <li><a href="#hardware">Hardware</a></li>
+      <li><a href="#roadmap">Roadmap</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <button class="menu-toggle" id="menu-toggle" aria-label="Open menu">[ menu ]</button>
+  </div>
+</nav>
+
+<!-- ================================================================
+     HERO / 首屏
+     ----------------------------------------------------------------
+     最重要的 5 秒第一印象。包含三個區塊：
+       1. hero-meta：右上的座標 + 左上的綠色脈衝狀態指示
+       2. h1.reveal-lines：使用「整行裁切上推」動畫的編輯級標題
+                          每一行包在 .line（overflow:hidden）內
+                          子層 span 從 translateY(102%) → 0
+       3. hero-foot：說明文字（lede）+ 兩顆 CTA 按鈕
+     ----------------------------------------------------------------
+     若要改文案，直接改 <span> 內文字即可，動畫會繼續正常運作。
+================================================================ -->
+<header class="hero s-light" id="top">
+  <!-- 上方狀態列：左 = 即時指示燈、右 = 地理座標 -->
+  <div class="hero-meta">
+    <div class="hero-status">
+      <span class="dot" aria-hidden="true"></span>
+      iGEM 2026 · National Tsing Hua University
+    </div>
+    <div class="hero-coords">
+      <span>24.7956° N · 120.9941° E</span>
+      <span>Hsinchu / Taiwan</span>
+    </div>
+  </div>
+
+  <!-- 主標題（每行用 .line 包，動畫從下方推上）-->
+  <h1 class="reveal-lines" data-reveal>
+    <span class="line"><span>An olfactory</span></span>
+    <span class="line"><span>system, learning</span></span>
+    <span class="line"><span><i class="it">from</i> the fly.</span></span>
+  </h1>
+
+  <!-- 下方：說明文字 + CTA -->
+  <div class="hero-foot">
+    <p class="lede reveal" data-reveal>
+      NTHU-FLY 結合果蠅神經運算模型與活體細胞感測陣列，打造可在邊緣裝置即時運行的生機一體（Bio-digital）仿生電子鼻。捕捉 ppb 級揮發性有機化合物，作為農業與醫療早期預警平台。
+    </p>
+    <div class="hero-actions reveal" data-reveal>
+      <a href="#abstract" class="btn btn-primary" data-cursor>
+        Read research <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <a href="#modules" class="btn-text" data-cursor>
+        Modules <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ================================================================
+     SECTION 01 — ABSTRACT / 計畫摘要
+     ----------------------------------------------------------------
+     非對稱 12 欄格線，分三塊：
+       • ab-quote：大字導引句（cols 3–10）
+       • ab-body：左側段落主體（cols 7–11）
+       • ab-side：右側技術摘要清單（cols 3–5）
+     ----------------------------------------------------------------
+     新增段落請放進 .ab-body；新增技術數據請放進 .ab-side（dl/dt/dd）
+================================================================ -->
+<section id="abstract" class="section s-light">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="sh-num reveal" data-reveal>(01) — Abstract</div>
+      <div class="sh-title reveal" data-reveal>
+        <span class="eyebrow">// Why this exists</span>
+        <h2 class="reveal-lines" data-reveal>
+          <span class="line"><span>An olfactory</span></span>
+          <span class="line"><span>decoder distilled</span></span>
+          <span class="line"><span>from biology.</span></span>
+        </h2>
+      </div>
+    </div>
+
+    <div class="abstract-grid">
+      <p class="ab-quote reveal" data-reveal>
+        植物在染病初期釋放的揮發性有機化合物（VOCs），是極具價值的早期求救訊號 — 卻幾乎沒有現有感測技術能在田間環境中精準聽見它。
+      </p>
+      <div class="ab-body reveal" data-reveal>
+        <p>
+          NTHU-FLY 突破傳統硬體限制，利用表現果蠅嗅覺受體的活體細胞陣列作為感測核心，發揮自然界千萬年演化出的極致靈敏度。
+        </p>
+        <p>
+          在運算後端，導入仿生資料處理演算法，將高維度的螢光動態訊號轉化為精準的疾病辨識結果。低功耗、高專一性、可自我修復 — 並能無縫部署至邊緣運算裝置。
+        </p>
+      </div>
+      <dl class="ab-side reveal" data-reveal>
+        <dt>Sensitivity</dt>
+        <dd>ppb-level VOC detection</dd>
+        <dt>Modules</dt>
+        <dd>3 core research stacks</dd>
+        <dt>Cell lines</dt>
+        <dd>4+ stable OR variants</dd>
+        <dt>Bedside</dt>
+        <dd>37 °C controlled</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     SECTION 02 — MODULES / 三大研究模組（深色反相區）
+     ----------------------------------------------------------------
+     深色區段（s-dark + data-theme="dark"）。捲到此處時：
+       • 頁面背景由白翻黑（CSS）
+       • script.js 將 body 加上 .is-dark，進度條同步轉白
+     ----------------------------------------------------------------
+     卡片結構（.module）：
+       • .m-num：模組編號（M·01 / Bio-Sensing）
+       • h3：中文模組名稱
+       • p：技術說明
+       • .m-tags：技術關鍵字標籤
+     新增模組請複製整個 <article class="module"> 區塊。
+================================================================ -->
+<section id="modules" class="section s-dark modules" data-theme="dark">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="sh-num reveal" data-reveal>(02) — Research</div>
+      <div class="sh-title reveal" data-reveal>
+        <span class="eyebrow">// Three core modules</span>
+        <h2 class="reveal-lines" data-reveal>
+          <span class="line"><span>Bottom-up,</span></span>
+          <span class="line"><span>two tracks,</span></span>
+          <span class="line"><span><i class="it">one</i> stack.</span></span>
+        </h2>
+      </div>
+    </div>
+
+    <div class="modules-grid reveal-stagger" data-reveal>
+      <!-- 模組 1：生物感測 -->
+      <article class="module">
+        <div class="m-num">M·01 / Bio-Sensing</div>
+        <h3>昆蟲嗅覺受體之異源表現</h3>
+        <p>
+          以 HEK293T 為平台，雙質體共轉染策略快速建立氣味感測元件。GCaMP6 螢光動態驗證受體活化，並導入 AlphaFold 與分子對接進行 AI 輔助蛋白突變優化。
+        </p>
+        <div class="m-tags">
+          <span class="tag">HEK293T</span>
+          <span class="tag">GCaMP6</span>
+          <span class="tag">AlphaFold</span>
+        </div>
+      </article>
+
+      <!-- 模組 2：神經運算 -->
+      <article class="module">
+        <div class="m-num">M·02 / Neural Compute</div>
+        <h3>仿生神經運算與深度學習</h3>
+        <p>
+          模擬果蠅觸角葉（AL）側向抑制與蕈狀體（MB）的局部敏感雜湊（LSH）稀疏編碼。將高維螢光矩陣轉為精準分類，活體雙光子鈣離子造影提供生物學基準。
+        </p>
+        <div class="m-tags">
+          <span class="tag">AL · LN</span>
+          <span class="tag">MB · LSH</span>
+          <span class="tag">Sparse</span>
+        </div>
+      </article>
+
+      <!-- 模組 3：跨物種升級 -->
+      <article class="module">
+        <div class="m-num">M·03 / Cross-species</div>
+        <h3>哺乳動物嗅覺仿生平台</h3>
+        <p>
+          PC12 神經細胞系表現狗、貓與人類特異性 OR、伴侶蛋白 RTP1S 與 G<sub>αolf</sub>。透過 cAMP 與鈣離子訊號比較跨物種靈敏度，作為次世代感測升級基礎。
+        </p>
+        <div class="m-tags">
+          <span class="tag">PC12</span>
+          <span class="tag">GPCR</span>
+          <span class="tag">RTP1S</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     SECTION 03 — HARDWARE / 硬體架構（黏著式滾動敘事）
+     ----------------------------------------------------------------
+     本區為 sticky-pin storytelling：
+       • 左欄（.stage-fig）：position: sticky, 垂直釘住不動
+                            內含巨大義式編號「03」+ 規格小字
+       • 右欄（.stage-cards）：四張卡片自然滾過
+                              每張卡之間用 22vh 大間距分開
+     ----------------------------------------------------------------
+     捲動效果完全靠 CSS sticky 達成，不需要 JS。
+     如要新增硬體步驟，直接複製 .hwcard，sticky 圖層自動延長。
+================================================================ -->
+<section id="hardware" class="section s-light hardware-stage">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="sh-num reveal" data-reveal>(03) — Hardware</div>
+      <div class="sh-title reveal" data-reveal>
+        <span class="eyebrow">// Bedside edge platform</span>
+        <h2 class="reveal-lines" data-reveal>
+          <span class="line"><span>A disposable</span></span>
+          <span class="line"><span>cartridge for</span></span>
+          <span class="line"><span><i class="it">live</i> tissue.</span></span>
+        </h2>
+      </div>
+    </div>
+
+    <div class="stage">
+      <!-- 左：黏著釘住的編號圖塊 -->
+      <div class="stage-fig" aria-hidden="true">
+        <span class="figmark">03</span>
+        <div class="figmeta">
+          <div><b>Form</b>Bedside terminal</div>
+          <div><b>Sample</b>Exhaled gas</div>
+          <div><b>Optics</b>488 nm LED</div>
+          <div><b>Compute</b>Edge AI</div>
+        </div>
+      </div>
+
+      <!-- 右：步驟卡片，依次 A→B→C→D -->
+      <div class="stage-cards">
+        <article class="hwcard reveal" data-reveal>
+          <div class="hw-step">Step A</div>
+          <h3>Disposable ALI bio-cartridge.</h3>
+          <p>
+            聚碳酸酯奈米微孔濾膜載體，<strong>PDL 生物錨定</strong>搭配低熔點洋菜膠相變固水技術，徹底消除運送途中之液面搖晃，把活體細胞陣列做成可拋棄的耗材單元。
+          </p>
+        </article>
+        <article class="hwcard reveal" data-reveal>
+          <div class="hw-step">Step B</div>
+          <h3>Direct gas perfusion.</h3>
+          <p>
+            微型氣泵以低流速導入呼出氣袋檢體；串聯氣道確保陣列濃度一致；<strong>0.22 µm 醫療級濾嘴</strong>維持生物安全。
+          </p>
+        </article>
+        <article class="hwcard reveal" data-reveal>
+          <div class="hw-step">Step C</div>
+          <h3>Incubation &amp; light shield.</h3>
+          <p>
+            Peltier 致冷／加熱晶片搭配 PID 控制，<strong>37 °C 恆溫</strong>誤差 ± 0.2 °C；卡扣 + O-ring 達成絕對物理避光，杜絕外部光源干擾螢光擷取。
+          </p>
+        </article>
+        <article class="hwcard reveal" data-reveal>
+          <div class="hw-step">Step D</div>
+          <h3>Optical readout, edge inference.</h3>
+          <p>
+            488 nm LED + 帶通濾光片擷取 ΔF/F₀；<strong>雙腦架構</strong>（Arduino 控制 + Raspberry Pi 推論）本地端執行類觸角葉神經網路模型，毫秒級回傳分類結果。
+          </p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     SECTION 04 — ROADMAP / 五個月時程（深色反相區）
+     ----------------------------------------------------------------
+     四列時程（.roadmap-row），每列 4 個欄位：
+       • .rm-month：月份（M.01 / Apr）
+       • .rm-tag：階段標籤或 Checkpoint pill
+       • h3：英文主標
+       • p：中文細節
+     ----------------------------------------------------------------
+     新增里程碑：複製 .roadmap-row。Checkpoint 用 <span class="pill">。
+================================================================ -->
+<section id="roadmap" class="section s-dark roadmap" data-theme="dark">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="sh-num reveal" data-reveal>(04) — Roadmap</div>
+      <div class="sh-title reveal" data-reveal>
+        <span class="eyebrow">// Five-month sprint</span>
+        <h2 class="reveal-lines" data-reveal>
+          <span class="line"><span>POC, compressed.</span></span>
+          <span class="line"><span><i class="it">Rigorous,</i> fast.</span></span>
+        </h2>
+      </div>
+    </div>
+
+    <div class="roadmap-list">
+      <article class="roadmap-row reveal" data-reveal>
+        <div class="rm-month">M.01 / Apr</div>
+        <div class="rm-tag">— · Setup</div>
+        <h3>Plasmid build + optical rig.</h3>
+        <p>完成 HEK293T 雙質體序列建構與擴增；備妥基礎光學觀測環境。</p>
+      </article>
+      <article class="roadmap-row reveal" data-reveal>
+        <div class="rm-month">M.02 / May</div>
+        <div class="rm-tag"><span class="pill">Checkpoint 01</span></div>
+        <h3>Cell-line POC.</h3>
+        <p>觀測 VUAA1 激發之螢光動態反應；同步完成哺乳動物 OR 系統質體設計。</p>
+      </article>
+      <article class="roadmap-row reveal" data-reveal>
+        <div class="rm-month">M.03–04 / Jun–Aug</div>
+        <div class="rm-tag"><span class="pill">Checkpoint 02</span></div>
+        <h3>Fluorescence matrix + receptor optimisation.</h3>
+        <p>產出果蠅 OR 陣列基礎螢光資料矩陣交予 DL 團隊；完成計算生物學受體突變優化；啟動 PC12 轉染與功能驗證。</p>
+      </article>
+      <article class="roadmap-row reveal" data-reveal>
+        <div class="rm-month">M.05 / Sep</div>
+        <div class="rm-tag"><span class="pill">Checkpoint 03</span></div>
+        <h3>Integrated MVP.</h3>
+        <p>完成高通量氣味刺激測試與 DL 演算法分類準確率驗證；產出初代生物感測 MVP。</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     SECTION 05 — INNOVATION / 計畫價值
+     ----------------------------------------------------------------
+     三欄並列卡片，說明本計畫的學術／材料／邊緣運算三面向價值。
+     使用 .reveal-stagger 讓三張卡片依序揭露。
+================================================================ -->
+<section id="innovation" class="section s-light">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="sh-num reveal" data-reveal>(05) — Why it matters</div>
+      <div class="sh-title reveal" data-reveal>
+        <span class="eyebrow">// Innovation &amp; value</span>
+        <h2 class="reveal-lines" data-reveal>
+          <span class="line"><span>Three angles,</span></span>
+          <span class="line"><span>one platform.</span></span>
+        </h2>
+      </div>
+    </div>
+
+    <div class="innov-grid reveal-stagger" data-reveal>
+      <article class="innov">
+        <div class="innov-num">i.01 / Academic</div>
+        <h3>學術創新</h3>
+        <p>首創將活體哺乳動物細胞之異源表現陣列<strong>直接對接果蠅大腦演算法</strong>，為神經形態運算提供真實生物訊號來源。</p>
+      </article>
+      <article class="innov">
+        <div class="innov-num">i.02 / Material</div>
+        <h3>解決材料老化痛點</h3>
+        <p>細胞自我更新能力，從根本解決傳統金屬氧化物感測器的<strong>材料疲勞與基線漂移</strong>，大幅延長感測器壽命與穩定性。</p>
+      </article>
+      <article class="innov">
+        <div class="innov-num">i.03 / Edge AI</div>
+        <h3>邊緣運算潛力</h3>
+        <p>LSH 演算法忠實還原昆蟲大腦<strong>極高能效比</strong>，輕量化架構適合部署於低功耗邊緣晶片，廣泛應用於溫室監測與工業氣體洩漏追蹤。</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     CTA / 行動呼籲（深色反相區）
+     ----------------------------------------------------------------
+     最終轉換點。修改聯絡信箱請改 mailto: 連結。
+================================================================ -->
+<section id="contact" class="section s-dark cta" data-theme="dark">
+  <div class="wrap">
+    <span class="eyebrow reveal" data-reveal>// Join us</span>
+    <h2 class="reveal-lines" data-reveal>
+      <span class="line"><span>Re-defining</span></span>
+      <span class="line"><span>olfaction, <i class="it">together.</i></span></span>
+    </h2>
+    <div class="cta-actions reveal" data-reveal>
+      <a href="mailto:team@nthu-fly.example" class="btn btn-primary" data-cursor>
+        Contact team <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <a href="#" class="btn-text" data-cursor>
+        Project brief <span class="arrow" aria-hidden="true">↓</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     FOOTER / 頁尾（深色反相區）
+     ----------------------------------------------------------------
+     四欄佈局：
+       • f-brand：品牌敘述（cols 1–5）
+       • f-col × 3：Project / Research / Connect 連結清單
+     新增連結請加進對應 <ul> 內的 <li>。
+================================================================ -->
+<footer data-theme="dark">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="f-brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="16" cy="18" rx="6" ry="8.5"/>
+            <path d="M11 14 q5 -2 10 0"/>
+            <path d="M11 14 q-7 -3 -8 -10 q4 1 9 7"/>
+            <path d="M21 14 q7 -3 8 -10 q-4 1 -9 7"/>
+            <circle cx="13" cy="11" r="1.6"/>
+            <circle cx="19" cy="11" r="1.6"/>
+            <path d="M14 9 q-1 -3 -3 -4"/>
+            <path d="M18 9 q1 -3 3 -4"/>
+          </svg>
+        </span>
+        <h2>NTHU—<i>FLY.</i></h2>
+        <p>Bio-Digital Olfactory System. National Tsing Hua University · iGEM 2026.</p>
+      </div>
+
+      <div class="f-col">
+        <h4>Project</h4>
+        <ul>
+          <li><a href="#abstract">Abstract</a></li>
+          <li><a href="#modules">Modules</a></li>
+          <li><a href="#hardware">Hardware</a></li>
+        </ul>
+      </div>
+      <div class="f-col">
+        <h4>Research</h4>
+        <ul>
+          <li><a href="#roadmap">Roadmap</a></li>
+          <li><a href="#innovation">Innovation</a></li>
+          <li><a href="#">References</a></li>
+        </ul>
+      </div>
+      <div class="f-col">
+        <h4>Connect</h4>
+        <ul>
+          <li><a href="mailto:team@nthu-fly.example">Email</a></li>
+          <li><a href="#">GitHub</a></li>
+          <li><a href="#">iGEM Wiki</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 NTHU-FLY · iGEM</span>
+      <span>v0.3 · editorial draft</span>
+    </div>
+  </div>
+</footer>
+
+<!-- 行為腳本：滑鼠軌跡、捲動進度、揭露動畫、深色區段偵測、行動裝置選單 -->
+<script src="assets/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+# ====================================================
+# NTHU-FLY · .gitignore
+# ====================================================
+# 不要把這些東西丟上 GitHub：
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# 編輯器個人設定（每個人習慣不同，不該共用）
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+
+# Node（之後若加打包工具）
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+
+# Logs / temp
+*.log
+*.tmp
+.cache/
+
+# 大型素材原檔（之後若有 .ai / .psd / .sketch / .fig 請另外存雲端）
+*.ai
+*.psd
+*.sketch
+*.fig
+
+# 個人筆記（不該推上 repo）
+NOTES.md
+TODO.local.md
+
+# 環境變數（這個 repo 是純靜態網站，理論上不會用到，但留著保險）
+.env
+.env.local
+.env.*.local
+
+# 大檔（避免不小心把參考 PDF 推上去）
+*.pdf
+*.docx
