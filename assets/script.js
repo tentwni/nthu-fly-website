@@ -272,7 +272,7 @@
       const full_name  = LANG_NAMES[code] || '';
       return ''
         + '<li>'
-        + '<button class="lang-option" data-lang="' + code + '" role="option" aria-selected="false" data-cursor>'
+        + '<button class="lang-option" type="button" data-lang="' + code + '" role="option" aria-selected="false" data-cursor>'
         +   '<span class="lang-code">' + code_label + '</span>'
         +   (full_name ? '<span class="lang-name">' + full_name + '</span>' : '')
         + '</button>'
@@ -280,33 +280,25 @@
     }).join('');
   }
 
-  /** 連動切換按鈕 ↔ popover 的開關行為 */
+  /** 連動切換按鈕 ↔ popover 的開關行為
+      簡化版：只在 #lang 父層 toggle 一個 .is-open class，CSS 監聽該 class
+      就能控制 popover 顯隱。不再使用 hidden 屬性與 requestAnimationFrame，
+      避免時序競爭造成「點了沒反應」的狀況。 */
   function wireToggle(dict) {
     const toggle  = document.getElementById('lang-toggle');
     const popover = document.getElementById('lang-popover');
-    const lang    = document.getElementById('lang');
-    if (!toggle || !popover || !lang) return;
-
-    let closeTimer = null;
+    const langWrap = document.getElementById('lang');
+    if (!toggle || !popover || !langWrap) return;
 
     function setOpen(open) {
+      langWrap.classList.toggle('is-open', open);
       toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-      if (open) {
-        if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
-        popover.removeAttribute('hidden');
-        // 下一影格再加上 data-open，確保 transition 觸發
-        requestAnimationFrame(() => popover.setAttribute('data-open', 'true'));
-      } else {
-        popover.removeAttribute('data-open');
-        // 等過渡動畫播完才隱藏元素，避免突兀
-        closeTimer = setTimeout(() => popover.setAttribute('hidden', ''), 260);
-      }
     }
 
     // 點按鈕：切換開關
     toggle.addEventListener('click', (e) => {
       e.stopPropagation();
-      const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+      const isOpen = langWrap.classList.contains('is-open');
       setOpen(!isOpen);
     });
 
@@ -328,7 +320,7 @@
 
     // Escape → 關閉並把焦點還給按鈕
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+      if (e.key === 'Escape' && langWrap.classList.contains('is-open')) {
         setOpen(false);
         toggle.focus();
       }
