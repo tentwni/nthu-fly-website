@@ -311,112 +311,99 @@ body.is-dark .nav {
 /* ================================================================
    07b. LANGUAGE TOGGLE / 語系切換
    ----------------------------------------------------------------
-   位於 nav-links 與 menu-toggle 之間，顯示當前語系（中／EN…）。
-   點擊展開 popover 列出可選語系。
-   設計原則（依 §4 配色 / §5 字型 / §8.6 motion）：
-     • 純黑白；不引入第四色
-     • JetBrains Mono 0.78rem，配合 nav 排版視覺統一
-     • hover 僅 2px 上抬 + 背景反相，無 emerald 光暈
-     • popover 揭開動畫 240ms ease-out
+   設計目標：與既有 [ menu ] 按鈕同一個 editorial 調性。
+   • 純文字 + 方括弧，無外框、無圓角、無背景色
+   • 字型直接繼承 nav（JetBrains Mono uppercase, 0.78rem, 0.16em tracking）
+   • hover 與 [aria-expanded="true"] 時 .lang-current 出現底線
+     （與 .nav-links a 的 ::after 底線動畫完全一致）
+   • 不使用 emerald／不引入第四色／不用陰影／不抬升
+   ----------------------------------------------------------------
+   開合控制：CSS 純粹監看 .lang.is-open 父層 class，
+            JS 只需切換這個 class 一處即可。
 ================================================================ */
 .lang {
   position: relative;
   display: inline-flex;
   align-items: center;
-  margin-left: 24px;     /* 與 nav-links 間隔 */
+  margin-left: 32px;     /* 與 nav-links 末項齊距，與 [ menu ] 同節奏 */
 }
+
+/* Toggle button — 與 .menu-toggle 視覺等價：純文字、無框 */
 .lang-toggle {
   background: none;
-  border: 1px solid transparent;
+  border: none;
   color: inherit;
   font: inherit;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
+  padding: 4px 0;
   letter-spacing: 0.16em;
-  transition:
-    background 0.25s var(--ease),
-    color 0.25s var(--ease),
-    border-color 0.25s var(--ease),
-    transform 0.25s var(--ease);
-}
-.lang-toggle:hover,
-.lang-toggle[aria-expanded="true"] {
-  background: var(--black);
-  color: var(--white);
-  border-color: var(--black);
-  transform: translateY(-1px);
-}
-body.is-dark .lang-toggle:hover,
-body.is-dark .lang-toggle[aria-expanded="true"] {
-  background: var(--white);
-  color: var(--black);
-  border-color: var(--white);
+  text-transform: uppercase;
+  display: inline-block;
+  line-height: 1.4;
 }
 .lang-toggle:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
-}
-.lang-current { font-weight: 600; }
-.lang-caret {
-  font-size: 0.7em;
-  line-height: 1;
-  opacity: 0.7;
-  transition: transform 0.25s var(--ease);
-}
-.lang-toggle[aria-expanded="true"] .lang-caret {
-  transform: rotate(180deg);
+  outline: 1px dashed currentColor;
+  outline-offset: 4px;
 }
 
-/* Popover：從按鈕下方 6px 開始展開
-   不會擋到 mobile menu dropdown（dropdown 從 top:60px 開始，
-   popover 從按鈕底緣 +6px 開始，於 nav 高度內部錯開） */
-.lang-popover {
+/* .lang-current 的底線動效：與 .nav-links a:hover::after 對齊 */
+.lang-toggle .lang-current {
+  position: relative;
+  padding-bottom: 2px;
+}
+.lang-toggle .lang-current::after {
+  content: "";
   position: absolute;
-  top: calc(100% + 6px);
+  left: 0; right: 0; bottom: 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s var(--ease);
+}
+.lang-toggle:hover .lang-current::after,
+.lang-toggle[aria-expanded="true"] .lang-current::after {
+  transform: scaleX(1);
+}
+
+/* Popover：從按鈕下方 14px 開始
+   menu dropdown（行動裝置）從 top:60px 開始延伸；
+   本 popover anchor 在 .lang 按鈕下方，兩者錯開、不互相覆蓋。 */
+.lang-popover {
+  display: none;            /* 預設不顯示 */
+  position: absolute;
+  top: calc(100% + 14px);
   right: 0;
-  min-width: 120px;
+  min-width: 180px;
   margin: 0;
-  padding: 6px;
+  padding: 0;
   list-style: none;
   background: var(--white);
   color: var(--black);
-  border: 1px solid var(--ink-20);
-  border-radius: 12px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--black);
   font-family: var(--font-mono);
   font-size: 0.78rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  mix-blend-mode: normal;        /* 避免被 nav 的 difference 反相 */
-  transform-origin: top right;
+  mix-blend-mode: normal;   /* 不受 nav 的 difference 反相影響 */
   z-index: 110;
+}
+.lang.is-open .lang-popover { display: block; }
 
-  /* 揭開動畫 */
-  opacity: 0;
-  transform: translateY(-4px) scale(0.98);
-  transition:
-    opacity 0.24s var(--ease),
-    transform 0.24s var(--ease);
-  pointer-events: none;
-}
-.lang-popover[data-open="true"] {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  pointer-events: auto;
-}
 body.is-dark .lang-popover {
   background: var(--black);
   color: var(--white);
-  border-color: rgba(255,255,255,0.16);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  border-color: var(--white);
 }
+
 .lang-popover li {
   margin: 0;
+  border-top: 1px solid currentColor;
+  opacity: 0.999;           /* 確保 currentColor 套用到 border 上 */
 }
+.lang-popover li:first-child { border-top: none; }
+
+/* Option：點擊時整列反白（與 §10 編輯級互動一致） */
 .lang-option {
   width: 100%;
   background: none;
@@ -425,51 +412,39 @@ body.is-dark .lang-popover {
   font: inherit;
   cursor: pointer;
   text-align: left;
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 12px 16px;
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
   letter-spacing: 0.16em;
-  transition: background 0.18s var(--ease), color 0.18s var(--ease);
 }
 .lang-option:hover,
 .lang-option:focus-visible {
-  background: rgba(0, 0, 0, 0.06);
+  background: var(--black);
+  color: var(--white);
   outline: none;
 }
 body.is-dark .lang-option:hover,
 body.is-dark .lang-option:focus-visible {
-  background: rgba(255, 255, 255, 0.08);
-}
-.lang-option[aria-selected="true"] {
-  background: var(--black);
-  color: var(--white);
-}
-body.is-dark .lang-option[aria-selected="true"] {
   background: var(--white);
   color: var(--black);
 }
-.lang-option .lang-code {
-  font-weight: 600;
+.lang-option[aria-selected="true"] .lang-code {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
+.lang-option .lang-code { font-weight: 600; }
 .lang-option .lang-name {
-  opacity: 0.65;
-  font-size: 0.92em;
+  opacity: 0.55;
+  font-size: 0.9em;
   text-transform: none;
   letter-spacing: 0;
 }
 
-/* prefers-reduced-motion：關掉所有過渡 */
+/* prefers-reduced-motion：關掉底線動畫 */
 @media (prefers-reduced-motion: reduce) {
-  .lang-toggle,
-  .lang-popover,
-  .lang-caret,
-  .lang-option {
-    transition: none !important;
-    transform: none !important;
-  }
+  .lang-toggle .lang-current::after { transition: none !important; }
 }
 
 
@@ -1085,11 +1060,10 @@ footer {
   .nav-links.open { display: flex; }
   .menu-toggle { display: inline-block; padding: 4px 8px; }
 
-  /* 語系切換在 mobile 時與漢堡並列；popover 仍 anchor 到按鈕本身，
-     不會與從 top:60px 展開的 menu dropdown 衝突 */
-  .lang { margin-left: auto; margin-right: 8px; }
-  .lang-toggle { padding: 4px 10px; }
-  .lang-popover { right: 0; min-width: 140px; }
+  /* 語系切換在 mobile 時往漢堡左側貼齊
+     popover anchor 在按鈕本體，不會與從 top:60px 展開的 menu dropdown 衝突 */
+  .lang { margin-left: auto; margin-right: 14px; }
+  .lang-popover { right: 0; min-width: 160px; }
 
   .modules .module,
   .innov,
