@@ -99,18 +99,15 @@
     </ul>
 
     <!-- 語系切換 / Language toggle
-         按鈕顯示當前語系縮寫（中／EN…）。點擊展開 popover。
-         popover 中按下選項會切換語系，並寫入 localStorage。
+         與 [ menu ] 按鈕同一個編輯級調性：純文字 + 方括弧，無外框、無圓角。
+         點擊展開 popover；點選項切換語系並寫入 localStorage。
          選項由 script.js 依 i18n.json 的 _meta.supported 動態產生。
     -->
     <div class="lang" id="lang">
-      <button class="lang-toggle" id="lang-toggle"
+      <button class="lang-toggle" id="lang-toggle" type="button"
               aria-haspopup="listbox" aria-expanded="false"
-              aria-label="Switch language">
-        <span class="lang-current" id="lang-current">中</span>
-        <span class="lang-caret" aria-hidden="true">▾</span>
-      </button>
-      <ul class="lang-popover" id="lang-popover" role="listbox" hidden></ul>
+              aria-label="Switch language">[ <span class="lang-current" id="lang-current">中</span> ]</button>
+      <ul class="lang-popover" id="lang-popover" role="listbox"></ul>
     </div>
 
     <button class="menu-toggle" id="menu-toggle" aria-label="Open menu">[ menu ]</button>
