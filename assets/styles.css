@@ -237,7 +237,7 @@ body.is-dark .progress { color: var(--white); }
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   color: var(--black);
-  transition: background 0.4s var(--ease), color 0.4s var(--ease), border-color 0.4s var(--ease);
+  transition: background 0.6s var(--ease), color 0.6s var(--ease), border-color 0.6s var(--ease);
 }
 body.is-dark .nav {
    background: rgba(0, 0, 0, 0.65);
@@ -894,13 +894,21 @@ footer {
     display: none;
     position: fixed;
     top: 60px; left: 0; right: 0;
-    background: var(--black);
-    color: var(--white);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    color: var(--black);
     flex-direction: column;
     padding: 28px var(--gutter) 36px;
     gap: 20px;
-    border-bottom: 1px solid rgba(255,255,255,0.18);
+    border-bottom: 1px solid rgba(0,0,0,0.08);
     mix-blend-mode: normal;
+    transition: background 0.6s var(--ease), color 0.6s var(--ease), border-color 0.6s var(--ease);
+  }
+  body.is-dark .nav-links {
+    background: rgba(0, 0, 0, 0.75);
+    color: var(--white);
+    border-bottom-color: rgba(255, 255, 255, 0.12);
   }
   .nav-links.open { display: flex; }
   .menu-toggle { display: inline-block; padding: 4px 8px; }
