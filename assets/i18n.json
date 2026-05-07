@@ -1,0 +1,92 @@
+{
+  "_meta": {
+    "comment": "AeroSense Bio · 多語系字典 / multilingual content dictionary",
+    "comment_en": "Each language is a top-level key. Add a new language by copying the 'zh' object and translating values. Element-side: tag <element data-i18n=\"key.path\"> in index.html. The key path uses dotted notation matching the structure below.",
+    "default_lang": "zh",
+    "supported": ["zh", "en"],
+    "labels": {
+      "zh": "中",
+      "en": "EN"
+    }
+  },
+
+  "zh": {
+    "html_lang": "zh-Hant",
+    "meta.title": "AeroSense Bio · Bio-Digital Olfactory System / iGEM 2026",
+    "meta.description": "AeroSense Bio · 結合果蠅神經運算模型與活體細胞感測陣列之仿生嗅覺邊緣運算系統。",
+
+    "hero.lede": "AeroSense Bio 結合果蠅神經運算模型與活體細胞感測陣列，打造可在邊緣裝置即時運行的生機一體（Bio-digital）仿生電子鼻。捕捉 ppb 級揮發性有機化合物，作為農業與醫療早期預警平台。",
+
+    "abstract.quote": "植物在染病初期釋放的揮發性有機化合物（VOCs），是極具價值的早期求救訊號 — 卻幾乎沒有現有感測技術能在田間環境中精準聽見它。",
+    "abstract.body1": "AeroSense Bio 突破傳統硬體限制，利用表現果蠅嗅覺受體的活體細胞陣列作為感測核心，發揮自然界千萬年演化出的極致靈敏度。",
+    "abstract.body2": "在運算後端，導入仿生資料處理演算法，將高維度的螢光動態訊號轉化為精準的疾病辨識結果。低功耗、高專一性、可自我修復 — 並能無縫部署至邊緣運算裝置。",
+
+    "modules.m1.title": "昆蟲嗅覺受體之異源表現",
+    "modules.m1.body": "以 HEK293T 為平台，雙質體共轉染策略快速建立氣味感測元件。GCaMP6 螢光動態驗證受體活化，並導入 AlphaFold 與分子對接進行 AI 輔助蛋白突變優化。",
+
+    "modules.m2.title": "仿生神經運算與深度學習",
+    "modules.m2.body": "模擬果蠅觸角葉（AL）側向抑制與蕈狀體（MB）的局部敏感雜湊（LSH）稀疏編碼。將高維螢光矩陣轉為精準分類，活體雙光子鈣離子造影提供生物學基準。",
+
+    "modules.m3.title": "哺乳動物嗅覺仿生平台",
+    "modules.m3.body": "PC12 神經細胞系表現狗、貓與人類特異性 OR、伴侶蛋白 RTP1S 與 G<sub>αolf</sub>。透過 cAMP 與鈣離子訊號比較跨物種靈敏度，作為次世代感測升級基礎。",
+
+    "hardware.a.body": "聚碳酸酯奈米微孔濾膜載體，<strong>PDL 生物錨定</strong>搭配低熔點洋菜膠相變固水技術，徹底消除運送途中之液面搖晃，把活體細胞陣列做成可拋棄的耗材單元。",
+    "hardware.b.body": "微型氣泵以低流速導入呼出氣袋檢體；串聯氣道確保陣列濃度一致；<strong>0.22 µm 醫療級濾嘴</strong>維持生物安全。",
+    "hardware.c.body": "Peltier 致冷／加熱晶片搭配 PID 控制，<strong>37 °C 恆溫</strong>誤差 ± 0.2 °C；卡扣 + O-ring 達成絕對物理避光，杜絕外部光源干擾螢光擷取。",
+    "hardware.d.body": "488 nm LED + 帶通濾光片擷取 ΔF/F₀；<strong>雙腦架構</strong>（Arduino 控制 + Raspberry Pi 推論）本地端執行類觸角葉神經網路模型，毫秒級回傳分類結果。",
+
+    "roadmap.r1.body": "完成 HEK293T 雙質體序列建構與擴增；備妥基礎光學觀測環境。",
+    "roadmap.r2.body": "觀測 VUAA1 激發之螢光動態反應；同步完成哺乳動物 OR 系統質體設計。",
+    "roadmap.r3.body": "產出果蠅 OR 陣列基礎螢光資料矩陣交予 DL 團隊；完成計算生物學受體突變優化；啟動 PC12 轉染與功能驗證。",
+    "roadmap.r4.body": "完成高通量氣味刺激測試與 DL 演算法分類準確率驗證；產出初代生物感測 MVP。",
+
+    "innov.i1.title": "學術創新",
+    "innov.i1.body": "首創將活體哺乳動物細胞之異源表現陣列<strong>直接對接果蠅大腦演算法</strong>，為神經形態運算提供真實生物訊號來源。",
+    "innov.i2.title": "解決材料老化痛點",
+    "innov.i2.body": "細胞自我更新能力，從根本解決傳統金屬氧化物感測器的<strong>材料疲勞與基線漂移</strong>，大幅延長感測器壽命與穩定性。",
+    "innov.i3.title": "邊緣運算潛力",
+    "innov.i3.body": "LSH 演算法忠實還原昆蟲大腦<strong>極高能效比</strong>，輕量化架構適合部署於低功耗邊緣晶片，廣泛應用於溫室監測與工業氣體洩漏追蹤。",
+
+    "footer.brand_desc": "Bio-Digital Olfactory System. National Tsing Hua University · iGEM 2026."
+  },
+
+  "en": {
+    "html_lang": "en",
+    "meta.title": "AeroSense Bio · Bio-Digital Olfactory System / iGEM 2026",
+    "meta.description": "AeroSense Bio — a bio-digital olfactory system pairing Drosophila neural-compute models with live-cell sensor arrays.",
+
+    "hero.lede": "AeroSense Bio pairs Drosophila neural-compute models with live-cell sensor arrays to build a bio-digital olfactory system that runs in real time on edge hardware. It detects volatile organic compounds at ppb-level concentrations as an early-warning platform for agriculture and clinical use.",
+
+    "abstract.quote": "The volatile organic compounds plants emit at the onset of disease are a uniquely valuable distress signal — yet almost no existing sensor can read them accurately under field conditions.",
+    "abstract.body1": "AeroSense Bio moves past the limits of inorganic transducers by using a living cell array — engineered to express Drosophila olfactory receptors — as its sensing core, drawing on the sensitivity that biology has refined over millions of years of evolution.",
+    "abstract.body2": "On the compute side, biologically inspired algorithms turn high-dimensional fluorescence dynamics into precise pathogen classifications. Low power, high specificity, self-renewing — and built to run on edge devices.",
+
+    "modules.m1.title": "Heterologous expression of insect olfactory receptors",
+    "modules.m1.body": "HEK293T cells provide the platform; a dual-plasmid co-transfection strategy lets us stand up odor-sensing units quickly. GCaMP6 fluorescence dynamics confirm receptor activation, and AlphaFold + molecular docking guide AI-assisted point mutations for affinity tuning.",
+
+    "modules.m2.title": "Biomimetic neural compute and deep learning",
+    "modules.m2.body": "We model lateral inhibition in the Drosophila antennal lobe (AL) and locality-sensitive hashing (LSH) sparse coding in the mushroom body (MB), turning the high-dimensional fluorescence matrix into precise classifications. In-vivo two-photon calcium imaging supplies the biological ground truth.",
+
+    "modules.m3.title": "Mammalian olfactory biomimicry platform",
+    "modules.m3.body": "PC12 neuronal cells express canine, feline, and human-specific ORs alongside the chaperone RTP1S and G<sub>αolf</sub>. Cross-species sensitivity is benchmarked through cAMP and calcium readouts — the basis for follow-on sensor architectures.",
+
+    "hardware.a.body": "A polycarbonate nano-porous membrane carrier with <strong>PDL biological anchoring</strong>, paired with low-melting-point agarose phase-change water immobilisation, eliminates fluid sloshing during transport. The living cell array becomes a single disposable consumable.",
+    "hardware.b.body": "A micro-pump introduces exhaled-breath samples at low flow rates; a serial gas path keeps concentrations uniform across the array; a <strong>0.22 µm medical-grade filter</strong> preserves biosafety.",
+    "hardware.c.body": "A Peltier element under PID control holds <strong>37 °C ± 0.2 °C</strong>. A snap-fit housing with O-ring seal blocks ambient light entirely, preventing interference with fluorescence readout.",
+    "hardware.d.body": "A 488 nm LED with bandpass filter captures ΔF/F₀. A <strong>dual-controller architecture</strong> — Arduino for hardware control, Raspberry Pi for inference — runs an antennal-lobe-style neural model locally and returns classifications in milliseconds.",
+
+    "roadmap.r1.body": "Construct and amplify the HEK293T dual-plasmid system; bring the optical readout rig online.",
+    "roadmap.r2.body": "Observe VUAA1-triggered fluorescence dynamics; finalise plasmid design for the mammalian OR system in parallel.",
+    "roadmap.r3.body": "Generate the baseline fluorescence-data matrix from the Drosophila OR array and hand it to the DL team; complete computational-biology receptor mutation optimisation; begin PC12 transfection and functional validation.",
+    "roadmap.r4.body": "Run high-throughput odor-stimulus tests; verify classification accuracy of the DL algorithm; ship the first biosensor MVP.",
+
+    "innov.i1.title": "Academic novelty",
+    "innov.i1.body": "We are the first to wire a heterologous-expression array of live mammalian cells <strong>directly to a fruit-fly brain algorithm</strong>, giving neuromorphic compute a source of real biological signal.",
+    "innov.i2.title": "Self-renewing sensor materials",
+    "innov.i2.body": "Living cells' self-renewal capacity addresses, at the source, the <strong>material fatigue and baseline drift</strong> that limit traditional metal-oxide sensors — extending working life and stability substantially.",
+    "innov.i3.title": "Edge-compute potential",
+    "innov.i3.body": "The LSH algorithm faithfully reproduces the <strong>energy efficiency</strong> of the insect brain. Its lightweight architecture deploys cleanly on low-power edge silicon — applicable to greenhouse monitoring and industrial gas-leak tracking.",
+
+    "footer.brand_desc": "Bio-Digital Olfactory System. National Tsing Hua University · iGEM 2026."
+  }
+}

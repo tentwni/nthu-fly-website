@@ -181,4 +181,184 @@
     });
   }
 
+
+  /* ==============================================================
+     6. I18N / 多語系字典
+     ----------------------------------------------------------------
+     從 assets/i18n.json 載入語系字典，依使用者偏好渲染所有
+     [data-i18n="key"] 元素的內容；同步更新 <html lang>、<title>、
+     <meta description>，並把選擇寫入 localStorage。
+
+     擴充新語系流程：
+       1. 在 i18n.json 加入新語系區塊（複製 zh 物件改值）
+       2. 在 _meta.supported 加入新代碼
+       3. 在 _meta.labels 加入新代碼對應的縮寫（如 "JP"）
+       無需修改本檔案。
+
+     優雅降級：
+       • 載入失敗：隱藏 .lang，頁面內文維持 HTML 中嵌入的中文
+       • 找不到 key 對應的翻譯：保留該元素原本內文不覆寫
+  ============================================================== */
+  const I18N_URL    = 'assets/i18n.json';
+  const I18N_KEY    = 'aerosense.lang';
+  // 各語系的全名（顯示在 popover 第二行；未列出的代碼則只顯示縮寫）
+  const LANG_NAMES  = { zh: '中文', en: 'English', jp: '日本語', kr: '한국어', fr: 'Français', es: 'Español', de: 'Deutsch' };
+
+  /** 偵測初始語系：localStorage > navigator.language > fallback */
+  function detectLang(supported, fallback) {
+    try {
+      const saved = localStorage.getItem(I18N_KEY);
+      if (saved && supported.indexOf(saved) !== -1) return saved;
+    } catch (_) { /* localStorage 可能被瀏覽器限制 */ }
+    const browser = (navigator.language || '').toLowerCase();
+    for (let i = 0; i < supported.length; i++) {
+      if (browser.indexOf(supported[i]) === 0) return supported[i];
+    }
+    if (browser.indexOf('zh') === 0 && supported.indexOf('zh') !== -1) return 'zh';
+    if (browser.indexOf('en') === 0 && supported.indexOf('en') !== -1) return 'en';
+    return fallback;
+  }
+
+  /** 把整本字典套到頁面上 */
+  function applyLang(dict, lang) {
+    const l = dict[lang];
+    if (!l) return;
+
+    // <html lang>
+    if (l.html_lang) document.documentElement.lang = l.html_lang;
+    // <title> 與 <meta description>
+    if (l['meta.title']) document.title = l['meta.title'];
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc && l['meta.description']) {
+      metaDesc.setAttribute('content', l['meta.description']);
+    }
+
+    // 所有 [data-i18n] 元素覆寫內容
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      const val = l[key];
+      if (val !== undefined && val !== null) {
+        // 使用 innerHTML 以保留 <strong>、<sub> 等行內標籤
+        // 由於字典為同源靜態 JSON，沒有 XSS 風險
+        el.innerHTML = val;
+      }
+    });
+
+    // 更新切換按鈕上的當前語系縮寫
+    const current = document.getElementById('lang-current');
+    if (current && dict._meta && dict._meta.labels && dict._meta.labels[lang]) {
+      current.textContent = dict._meta.labels[lang];
+    }
+
+    // 更新 popover 內選項的選中狀態
+    document.querySelectorAll('.lang-option').forEach(opt => {
+      opt.setAttribute('aria-selected', opt.dataset.lang === lang ? 'true' : 'false');
+    });
+
+    // 寫回偏好
+    try { localStorage.setItem(I18N_KEY, lang); } catch (_) {}
+  }
+
+  /** 動態建立 popover 內的語系選項 */
+  function buildPopover(dict) {
+    const popover = document.getElementById('lang-popover');
+    if (!popover) return;
+    const meta = dict._meta || {};
+    const supported = meta.supported || Object.keys(dict).filter(k => !k.startsWith('_'));
+    const labels = meta.labels || {};
+
+    popover.innerHTML = supported.map(code => {
+      const code_label = labels[code] || code.toUpperCase();
+      const full_name  = LANG_NAMES[code] || '';
+      return ''
+        + '<li>'
+        + '<button class="lang-option" data-lang="' + code + '" role="option" aria-selected="false" data-cursor>'
+        +   '<span class="lang-code">' + code_label + '</span>'
+        +   (full_name ? '<span class="lang-name">' + full_name + '</span>' : '')
+        + '</button>'
+        + '</li>';
+    }).join('');
+  }
+
+  /** 連動切換按鈕 ↔ popover 的開關行為 */
+  function wireToggle(dict) {
+    const toggle  = document.getElementById('lang-toggle');
+    const popover = document.getElementById('lang-popover');
+    const lang    = document.getElementById('lang');
+    if (!toggle || !popover || !lang) return;
+
+    let closeTimer = null;
+
+    function setOpen(open) {
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (open) {
+        if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+        popover.removeAttribute('hidden');
+        // 下一影格再加上 data-open，確保 transition 觸發
+        requestAnimationFrame(() => popover.setAttribute('data-open', 'true'));
+      } else {
+        popover.removeAttribute('data-open');
+        // 等過渡動畫播完才隱藏元素，避免突兀
+        closeTimer = setTimeout(() => popover.setAttribute('hidden', ''), 260);
+      }
+    }
+
+    // 點按鈕：切換開關
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+      setOpen(!isOpen);
+    });
+
+    // 點選項：套用語系後關閉
+    popover.addEventListener('click', (e) => {
+      const btn = e.target.closest('.lang-option');
+      if (!btn) return;
+      const code = btn.dataset.lang;
+      if (code) {
+        applyLang(dict, code);
+        setOpen(false);
+      }
+    });
+
+    // 點外部 → 關閉
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#lang')) setOpen(false);
+    });
+
+    // Escape → 關閉並把焦點還給按鈕
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+  }
+
+  /** 載入 i18n.json 並啟動整套機制 */
+  function initI18n() {
+    fetch(I18N_URL, { cache: 'no-cache' })
+      .then(res => {
+        if (!res.ok) throw new Error('i18n fetch failed: ' + res.status);
+        return res.json();
+      })
+      .then(dict => {
+        const meta = dict._meta || {};
+        const supported = meta.supported || ['zh', 'en'];
+        const fallback  = meta.default_lang || 'zh';
+        buildPopover(dict);
+        wireToggle(dict);
+        const lang = detectLang(supported, fallback);
+        applyLang(dict, lang);
+      })
+      .catch(err => {
+        // 載入失敗：直接隱藏切換器，頁面維持嵌入的中文內容
+        const langEl = document.getElementById('lang');
+        if (langEl) langEl.style.display = 'none';
+        console.warn('[i18n] disabled:', err && err.message ? err.message : err);
+      });
+  }
+
+  initI18n();
+
 })();

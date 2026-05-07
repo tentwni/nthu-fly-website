@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <!-- ================================================================
-     NTHU-FLY · iGEM 2026 · Bio-Digital Olfactory System
+     AeroSense Bio · iGEM 2026 · Bio-Digital Olfactory System
      ================================================================
      檔案說明 / File overview
      ----------------------------------------------------------------
@@ -11,14 +11,20 @@
 
      • 樣式設定請見：assets/styles.css
      • 互動行為請見：assets/script.js
+     • 語系字典請見：assets/i18n.json（中／英文案統一在這裡管理）
      • 設計規範請見：WEBSITE_GUIDELINES.md（v0.3 編輯方向）
      • 舊版（暖色生技風）已封存於：archive/v1-warm.html
 
      維護原則：
-     1. 修改文字內容直接在這裡改，不要動到 assets/ 內檔案
+     1. 修改文字內容請改 assets/i18n.json，不要直接改本檔案
      2. 修改顏色、字級、間距 → 改 assets/styles.css 開頭的 :root tokens
-     3. 修改捲動行為、滑鼠軌跡、揭露動畫 → 改 assets/script.js
+     3. 修改捲動行為、滑鼠軌跡、揭露動畫、語系邏輯 → 改 assets/script.js
      4. 新增區塊請複製現有 <section> 並沿用既定 class 命名
+     5. 新增可翻譯文字 → 在元素加 data-i18n="key.path"，並在 i18n.json 兩個語系都補齊
+
+     可翻譯元素標記方式：
+       <p data-i18n="abstract.body1">中文內文</p>
+       元素的初始內文是中文，i18n 系統載入後依當前語系覆寫。
 ================================================================ -->
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -58,8 +64,13 @@
 <!-- ================================================================
      NAV / 頂部導覽列
      固定於頂部，使用 mix-blend-mode: difference 讓文字在黑白區段都可讀
-     左側：品牌標誌（小型線稿果蠅 SVG + NTHU—FLY 字樣）
-     右側：章節錨點 + 行動裝置選單按鈕
+     左側：品牌標誌（小型線稿果蠅 SVG + AeroSense Bio 字樣）
+     右側：章節錨點 + 語系切換 + 行動裝置選單按鈕
+
+     語系切換 .lang 位於 nav-links 與 menu-toggle 之間：
+       • desktop：浮在主選單右側
+       • mobile：與漢堡並列；popover 從按鈕下方展開（不會擋到 menu dropdown，
+         menu dropdown 從 top:60px 開始展開，popover 從按鈕底部 +6px 展開，兩者錯開）
 ================================================================ -->
 <nav class="nav" id="nav">
   <div class="nav-inner">
@@ -86,6 +97,22 @@
       <li><a href="#roadmap">Roadmap</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
+
+    <!-- 語系切換 / Language toggle
+         按鈕顯示當前語系縮寫（中／EN…）。點擊展開 popover。
+         popover 中按下選項會切換語系，並寫入 localStorage。
+         選項由 script.js 依 i18n.json 的 _meta.supported 動態產生。
+    -->
+    <div class="lang" id="lang">
+      <button class="lang-toggle" id="lang-toggle"
+              aria-haspopup="listbox" aria-expanded="false"
+              aria-label="Switch language">
+        <span class="lang-current" id="lang-current">中</span>
+        <span class="lang-caret" aria-hidden="true">▾</span>
+      </button>
+      <ul class="lang-popover" id="lang-popover" role="listbox" hidden></ul>
+    </div>
+
     <button class="menu-toggle" id="menu-toggle" aria-label="Open menu">[ menu ]</button>
   </div>
 </nav>
@@ -100,7 +127,7 @@
                           子層 span 從 translateY(102%) → 0
        3. hero-foot：說明文字（lede）+ 兩顆 CTA 按鈕
      ----------------------------------------------------------------
-     若要改文案，直接改 <span> 內文字即可，動畫會繼續正常運作。
+     若要改文案，直接改 i18n.json 對應的 key，動畫會繼續正常運作。
 ================================================================ -->
 <header class="hero s-light" id="top">
   <!-- 上方狀態列：左 = 即時指示燈、右 = 地理座標 -->
@@ -115,7 +142,9 @@
     </div>
   </div>
 
-  <!-- 主標題（每行用 .line 包，動畫從下方推上）-->
+  <!-- 主標題（每行用 .line 包，動畫從下方推上）
+       注意：H1 為英文編輯級主標，依規範 §1「英文可作為標題與標籤」，
+       因此兩個語系下都保持英文，不掛 data-i18n。 -->
   <h1 class="reveal-lines" data-reveal>
     <span class="line"><span>An olfactory</span></span>
     <span class="line"><span>system, learning</span></span>
@@ -124,7 +153,7 @@
 
   <!-- 下方：說明文字 + CTA -->
   <div class="hero-foot">
-    <p class="lede reveal" data-reveal>
+    <p class="lede reveal" data-reveal data-i18n="hero.lede">
       AeroSense Bio 結合果蠅神經運算模型與活體細胞感測陣列，打造可在邊緣裝置即時運行的生機一體（Bio-digital）仿生電子鼻。捕捉 ppb 級揮發性有機化合物，作為農業與醫療早期預警平台。
     </p>
     <div class="hero-actions reveal" data-reveal>
@@ -163,14 +192,14 @@
     </div>
 
     <div class="abstract-grid">
-      <p class="ab-quote reveal" data-reveal>
+      <p class="ab-quote reveal" data-reveal data-i18n="abstract.quote">
         植物在染病初期釋放的揮發性有機化合物（VOCs），是極具價值的早期求救訊號 — 卻幾乎沒有現有感測技術能在田間環境中精準聽見它。
       </p>
       <div class="ab-body reveal" data-reveal>
-        <p>
+        <p data-i18n="abstract.body1">
           AeroSense Bio 突破傳統硬體限制，利用表現果蠅嗅覺受體的活體細胞陣列作為感測核心，發揮自然界千萬年演化出的極致靈敏度。
         </p>
-        <p>
+        <p data-i18n="abstract.body2">
           在運算後端，導入仿生資料處理演算法，將高維度的螢光動態訊號轉化為精準的疾病辨識結果。低功耗、高專一性、可自我修復 — 並能無縫部署至邊緣運算裝置。
         </p>
       </div>
@@ -196,10 +225,10 @@
        • script.js 將 body 加上 .is-dark，進度條同步轉白
      ----------------------------------------------------------------
      卡片結構（.module）：
-       • .m-num：模組編號（M·01 / Bio-Sensing）
-       • h3：中文模組名稱
-       • p：技術說明
-       • .m-tags：技術關鍵字標籤
+       • .m-num：模組編號（M·01 / Bio-Sensing）— 不翻譯
+       • h3：模組名稱 data-i18n="modules.mX.title"
+       • p：技術說明 data-i18n="modules.mX.body"
+       • .m-tags：技術關鍵字標籤 — 不翻譯
      新增模組請複製整個 <article class="module"> 區塊。
 ================================================================ -->
 <section id="modules" class="section s-dark modules" data-theme="dark">
@@ -220,8 +249,8 @@
       <!-- 模組 1：生物感測 -->
       <article class="module">
         <div class="m-num">M·01 / Bio-Sensing</div>
-        <h3>昆蟲嗅覺受體之異源表現</h3>
-        <p>
+        <h3 data-i18n="modules.m1.title">昆蟲嗅覺受體之異源表現</h3>
+        <p data-i18n="modules.m1.body">
           以 HEK293T 為平台，雙質體共轉染策略快速建立氣味感測元件。GCaMP6 螢光動態驗證受體活化，並導入 AlphaFold 與分子對接進行 AI 輔助蛋白突變優化。
         </p>
         <div class="m-tags">
@@ -234,8 +263,8 @@
       <!-- 模組 2：神經運算 -->
       <article class="module">
         <div class="m-num">M·02 / Neural Compute</div>
-        <h3>仿生神經運算與深度學習</h3>
-        <p>
+        <h3 data-i18n="modules.m2.title">仿生神經運算與深度學習</h3>
+        <p data-i18n="modules.m2.body">
           模擬果蠅觸角葉（AL）側向抑制與蕈狀體（MB）的局部敏感雜湊（LSH）稀疏編碼。將高維螢光矩陣轉為精準分類，活體雙光子鈣離子造影提供生物學基準。
         </p>
         <div class="m-tags">
@@ -248,8 +277,8 @@
       <!-- 模組 3：跨物種升級 -->
       <article class="module">
         <div class="m-num">M·03 / Cross-species</div>
-        <h3>哺乳動物嗅覺仿生平台</h3>
-        <p>
+        <h3 data-i18n="modules.m3.title">哺乳動物嗅覺仿生平台</h3>
+        <p data-i18n="modules.m3.body">
           PC12 神經細胞系表現狗、貓與人類特異性 OR、伴侶蛋白 RTP1S 與 G<sub>αolf</sub>。透過 cAMP 與鈣離子訊號比較跨物種靈敏度，作為次世代感測升級基礎。
         </p>
         <div class="m-tags">
@@ -273,6 +302,9 @@
      ----------------------------------------------------------------
      捲動效果完全靠 CSS sticky 達成，不需要 JS。
      如要新增硬體步驟，直接複製 .hwcard，sticky 圖層自動延長。
+
+     注意：硬體 H3 標題在兩個語系下皆保持英文（編輯級標語），
+     僅 <p> 內描述受 i18n 控制。
 ================================================================ -->
 <section id="hardware" class="section s-light hardware-stage">
   <div class="wrap">
@@ -305,28 +337,28 @@
         <article class="hwcard reveal" data-reveal>
           <div class="hw-step">Step A</div>
           <h3>Disposable ALI bio-cartridge.</h3>
-          <p>
+          <p data-i18n="hardware.a.body">
             聚碳酸酯奈米微孔濾膜載體，<strong>PDL 生物錨定</strong>搭配低熔點洋菜膠相變固水技術，徹底消除運送途中之液面搖晃，把活體細胞陣列做成可拋棄的耗材單元。
           </p>
         </article>
         <article class="hwcard reveal" data-reveal>
           <div class="hw-step">Step B</div>
           <h3>Direct gas perfusion.</h3>
-          <p>
+          <p data-i18n="hardware.b.body">
             微型氣泵以低流速導入呼出氣袋檢體；串聯氣道確保陣列濃度一致；<strong>0.22 µm 醫療級濾嘴</strong>維持生物安全。
           </p>
         </article>
         <article class="hwcard reveal" data-reveal>
           <div class="hw-step">Step C</div>
           <h3>Incubation &amp; light shield.</h3>
-          <p>
+          <p data-i18n="hardware.c.body">
             Peltier 致冷／加熱晶片搭配 PID 控制，<strong>37 °C 恆溫</strong>誤差 ± 0.2 °C；卡扣 + O-ring 達成絕對物理避光，杜絕外部光源干擾螢光擷取。
           </p>
         </article>
         <article class="hwcard reveal" data-reveal>
           <div class="hw-step">Step D</div>
           <h3>Optical readout, edge inference.</h3>
-          <p>
+          <p data-i18n="hardware.d.body">
             488 nm LED + 帶通濾光片擷取 ΔF/F₀；<strong>雙腦架構</strong>（Arduino 控制 + Raspberry Pi 推論）本地端執行類觸角葉神經網路模型，毫秒級回傳分類結果。
           </p>
         </article>
@@ -339,10 +371,10 @@
      SECTION 04 — ROADMAP / 五個月時程（深色反相區）
      ----------------------------------------------------------------
      四列時程（.roadmap-row），每列 4 個欄位：
-       • .rm-month：月份（M.01 / Apr）
-       • .rm-tag：階段標籤或 Checkpoint pill
-       • h3：英文主標
-       • p：中文細節
+       • .rm-month：月份（M.01 / Apr）— 不翻譯
+       • .rm-tag：階段標籤或 Checkpoint pill — 不翻譯
+       • h3：英文主標 — 不翻譯（編輯級標語）
+       • p：細節 data-i18n="roadmap.rX.body"
      ----------------------------------------------------------------
      新增里程碑：複製 .roadmap-row。Checkpoint 用 <span class="pill">。
 ================================================================ -->
@@ -364,25 +396,25 @@
         <div class="rm-month">M.01 / Apr</div>
         <div class="rm-tag">— · Setup</div>
         <h3>Plasmid build + optical rig.</h3>
-        <p>完成 HEK293T 雙質體序列建構與擴增；備妥基礎光學觀測環境。</p>
+        <p data-i18n="roadmap.r1.body">完成 HEK293T 雙質體序列建構與擴增；備妥基礎光學觀測環境。</p>
       </article>
       <article class="roadmap-row reveal" data-reveal>
         <div class="rm-month">M.02 / May</div>
         <div class="rm-tag"><span class="pill">Checkpoint 01</span></div>
         <h3>Cell-line POC.</h3>
-        <p>觀測 VUAA1 激發之螢光動態反應；同步完成哺乳動物 OR 系統質體設計。</p>
+        <p data-i18n="roadmap.r2.body">觀測 VUAA1 激發之螢光動態反應；同步完成哺乳動物 OR 系統質體設計。</p>
       </article>
       <article class="roadmap-row reveal" data-reveal>
         <div class="rm-month">M.03–04 / Jun–Aug</div>
         <div class="rm-tag"><span class="pill">Checkpoint 02</span></div>
         <h3>Fluorescence matrix + receptor optimisation.</h3>
-        <p>產出果蠅 OR 陣列基礎螢光資料矩陣交予 DL 團隊；完成計算生物學受體突變優化；啟動 PC12 轉染與功能驗證。</p>
+        <p data-i18n="roadmap.r3.body">產出果蠅 OR 陣列基礎螢光資料矩陣交予 DL 團隊；完成計算生物學受體突變優化；啟動 PC12 轉染與功能驗證。</p>
       </article>
       <article class="roadmap-row reveal" data-reveal>
         <div class="rm-month">M.05 / Sep</div>
         <div class="rm-tag"><span class="pill">Checkpoint 03</span></div>
         <h3>Integrated MVP.</h3>
-        <p>完成高通量氣味刺激測試與 DL 演算法分類準確率驗證；產出初代生物感測 MVP。</p>
+        <p data-i18n="roadmap.r4.body">完成高通量氣味刺激測試與 DL 演算法分類準確率驗證；產出初代生物感測 MVP。</p>
       </article>
     </div>
   </div>
@@ -410,18 +442,18 @@
     <div class="innov-grid reveal-stagger" data-reveal>
       <article class="innov">
         <div class="innov-num">i.01 / Academic</div>
-        <h3>學術創新</h3>
-        <p>首創將活體哺乳動物細胞之異源表現陣列<strong>直接對接果蠅大腦演算法</strong>，為神經形態運算提供真實生物訊號來源。</p>
+        <h3 data-i18n="innov.i1.title">學術創新</h3>
+        <p data-i18n="innov.i1.body">首創將活體哺乳動物細胞之異源表現陣列<strong>直接對接果蠅大腦演算法</strong>，為神經形態運算提供真實生物訊號來源。</p>
       </article>
       <article class="innov">
         <div class="innov-num">i.02 / Material</div>
-        <h3>解決材料老化痛點</h3>
-        <p>細胞自我更新能力，從根本解決傳統金屬氧化物感測器的<strong>材料疲勞與基線漂移</strong>，大幅延長感測器壽命與穩定性。</p>
+        <h3 data-i18n="innov.i2.title">解決材料老化痛點</h3>
+        <p data-i18n="innov.i2.body">細胞自我更新能力，從根本解決傳統金屬氧化物感測器的<strong>材料疲勞與基線漂移</strong>，大幅延長感測器壽命與穩定性。</p>
       </article>
       <article class="innov">
         <div class="innov-num">i.03 / Edge AI</div>
-        <h3>邊緣運算潛力</h3>
-        <p>LSH 演算法忠實還原昆蟲大腦<strong>極高能效比</strong>，輕量化架構適合部署於低功耗邊緣晶片，廣泛應用於溫室監測與工業氣體洩漏追蹤。</p>
+        <h3 data-i18n="innov.i3.title">邊緣運算潛力</h3>
+        <p data-i18n="innov.i3.body">LSH 演算法忠實還原昆蟲大腦<strong>極高能效比</strong>，輕量化架構適合部署於低功耗邊緣晶片，廣泛應用於溫室監測與工業氣體洩漏追蹤。</p>
       </article>
     </div>
   </div>
@@ -475,7 +507,7 @@
           </svg>
         </span>
         <h2>AeroSense <i>Bio.</i></h2>
-        <p>Bio-Digital Olfactory System. National Tsing Hua University · iGEM 2026.</p>
+        <p data-i18n="footer.brand_desc">Bio-Digital Olfactory System. National Tsing Hua University · iGEM 2026.</p>
       </div>
 
       <div class="f-col">
@@ -511,7 +543,7 @@
   </div>
 </footer>
 
-<!-- 行為腳本：滑鼠軌跡、捲動進度、揭露動畫、深色區段偵測、行動裝置選單 -->
+<!-- 行為腳本：滑鼠軌跡、捲動進度、揭露動畫、深色區段偵測、行動裝置選單、語系切換 -->
 <script src="assets/script.js"></script>
 </body>
 </html>
