@@ -142,6 +142,17 @@ a { color: inherit; text-decoration: none; }
   font-variation-settings: "opsz" 144, "SOFT" 30, "wght" 700, "WONK" 0;
 }
 
+.lede,
+.ab-body p,
+.modules .module p,
+.hardware-stage .stage-cards .hwcard p,
+.roadmap-row p,
+.innov p {
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
+
 
 /* ================================================================
    04. LAYOUT PRIMITIVES / 版面工具
